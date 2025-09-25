@@ -2,31 +2,19 @@ using UnityEngine;
 
 public class Enemy : MonoBehaviour
 {
-    public enum EnemyType
+    public int health = 100;
+
+    public void TakeDamage(int amount)
     {
-        Comum,
-        MiniBoss,
-        Boss
+        health -= amount;
+        if (health <= 0)
+        {
+            Die();
+        }
     }
 
-    [Header("Atributos do Inimigo")]
-    public string nome;
-    public int vida;
-    public float velocidade;
-    public int defesa;
-    public float velocidadeAtaque;
-
-    [Header("Tipo de Inimigo")]
-    public EnemyType tipo;
-
-    // Método para mostrar informações no console
-    public void MostrarStatus()
+    private void Die()
     {
-        Debug.Log($"Inimigo: {nome}\n" +
-                  $"Tipo: {tipo}\n" +
-                  $"Vida: {vida}\n" +
-                  $"Velocidade: {velocidade}\n" +
-                  $"Defesa: {defesa}\n" +
-                  $"Velocidade de Ataque: {velocidadeAtaque}");
+        Destroy(gameObject);
     }
 }
