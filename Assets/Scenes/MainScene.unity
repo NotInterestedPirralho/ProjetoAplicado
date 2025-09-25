@@ -843,7 +843,7 @@ GameObject:
   - component: {fileID: 822019881}
   - component: {fileID: 822019880}
   m_Layer: 5
-  m_Name: backbar (1)
+  m_Name: HealthBar
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
