@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.InputSystem; // Novo Input System
 
 [RequireComponent(typeof(Rigidbody2D))]
+[RequireComponent(typeof(Player))]
 public class PlayerController2D : MonoBehaviour
 {
     [Header("Movimento")]
@@ -11,15 +12,16 @@ public class PlayerController2D : MonoBehaviour
     [Header("Combate")]
     public float duracaoAtaque = 0.3f; // duração do ataque
     private bool atacando = false;
-    private bool defendendo = false;
 
     private Rigidbody2D rb;
+    private Player player; // referência ao script Player
     private Vector2 movimento;
     private bool pular;
 
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+        player = GetComponent<Player>();
     }
 
     void Update()
@@ -81,10 +83,7 @@ public class PlayerController2D : MonoBehaviour
             StartCoroutine(Atacar());
 
         // Defesa com o botão direito do mouse
-        if (Mouse.current.rightButton.isPressed)
-            defendendo = true;
-        else
-            defendendo = false;
+        player.SetDefendendo(Mouse.current.rightButton.isPressed);
 
         // Interação com a tecla E
         if (Keyboard.current.eKey.wasPressedThisFrame)
@@ -104,14 +103,6 @@ public class PlayerController2D : MonoBehaviour
     {
         Debug.Log("Interagindo!");
         // Aqui você colocaria lógica de interação com objetos (ex: abrir porta, pegar item)
-    }
-
-    // =====================
-    // Utilitários
-    // =====================
-    public bool EstaDefendendo()
-    {
-        return defendendo;
     }
 
     public bool EstaAtacando()
