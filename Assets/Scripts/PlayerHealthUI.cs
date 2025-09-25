@@ -1,21 +1,24 @@
 using UnityEngine;
-using UnityEngine.UI; // necessário para usar Slider
+using UnityEngine.UI; // necessário para usar Image
 
 public class PlayerHealthUI : MonoBehaviour
 {
-    public Slider healthBar;   // arraste o Slider aqui no Inspector
+    public Image healthFill;   // arraste a imagem da barra (Fill) aqui no Inspector
     public Player player;      // referência ao Player
 
     void Start()
     {
-        // configura a barra com os valores iniciais
-        healthBar.maxValue = player.vidaMaxima;
-        healthBar.value = player.GetVidaAtual();
+        AtualizarBarra();
     }
 
     void Update()
     {
-        // atualiza a barra de vida todo frame
-        healthBar.value = player.GetVidaAtual();
+        AtualizarBarra();
+    }
+
+    void AtualizarBarra()
+    {
+        // fillAmount espera um valor entre 0 e 1
+        healthFill.fillAmount = (float)player.GetVidaAtual() / player.vidaMaxima;
     }
 }
