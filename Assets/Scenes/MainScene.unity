@@ -165,7 +165,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 711, y: -469}
+  m_AnchoredPosition: {x: 711, y: -409}
   m_SizeDelta: {x: 8.01, y: 2.032}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &124502397
@@ -1189,7 +1189,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2376154498910140427, guid: de8cfb4cfb7d4ec42aa9bd016840f298, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -15.050001
+      value: -16.06
       objectReference: {fileID: 0}
     - target: {fileID: 2376154498910140427, guid: de8cfb4cfb7d4ec42aa9bd016840f298, type: 3}
       propertyPath: m_LocalPosition.y
@@ -1709,11 +1709,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7255545364974641388, guid: de8cfb4cfb7d4ec42aa9bd016840f298, type: 3}
       propertyPath: m_CompositePaths.m_Paths.Array.data[0].Array.data[0].x
-      value: -24.91666
+      value: -24.916655
       objectReference: {fileID: 0}
     - target: {fileID: 7255545364974641388, guid: de8cfb4cfb7d4ec42aa9bd016840f298, type: 3}
       propertyPath: m_CompositePaths.m_Paths.Array.data[0].Array.data[0].y
-      value: 7.096097
+      value: 7.0960975
       objectReference: {fileID: 0}
     - target: {fileID: 7255545364974641388, guid: de8cfb4cfb7d4ec42aa9bd016840f298, type: 3}
       propertyPath: m_CompositePaths.m_Paths.Array.data[0].Array.data[1].x
@@ -1733,11 +1733,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7255545364974641388, guid: de8cfb4cfb7d4ec42aa9bd016840f298, type: 3}
       propertyPath: m_CompositePaths.m_Paths.Array.data[0].Array.data[3].x
-      value: -24.91666
+      value: -24.916655
       objectReference: {fileID: 0}
     - target: {fileID: 7255545364974641388, guid: de8cfb4cfb7d4ec42aa9bd016840f298, type: 3}
       propertyPath: m_CompositePaths.m_Paths.Array.data[0].Array.data[3].y
-      value: 8.263902
+      value: 8.263903
       objectReference: {fileID: 0}
     - target: {fileID: 7255545364974641388, guid: de8cfb4cfb7d4ec42aa9bd016840f298, type: 3}
       propertyPath: m_CompositePaths.m_Paths.Array.data[0].Array.data[4].x
@@ -1789,7 +1789,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7255545364974641388, guid: de8cfb4cfb7d4ec42aa9bd016840f298, type: 3}
       propertyPath: m_CompositePaths.m_Paths.Array.data[1].Array.data[0].x
-      value: -24.91666
+      value: -24.916655
       objectReference: {fileID: 0}
     - target: {fileID: 7255545364974641388, guid: de8cfb4cfb7d4ec42aa9bd016840f298, type: 3}
       propertyPath: m_CompositePaths.m_Paths.Array.data[1].Array.data[0].y
@@ -1813,7 +1813,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7255545364974641388, guid: de8cfb4cfb7d4ec42aa9bd016840f298, type: 3}
       propertyPath: m_CompositePaths.m_Paths.Array.data[1].Array.data[3].x
-      value: -24.91666
+      value: -24.916655
       objectReference: {fileID: 0}
     - target: {fileID: 7255545364974641388, guid: de8cfb4cfb7d4ec42aa9bd016840f298, type: 3}
       propertyPath: m_CompositePaths.m_Paths.Array.data[1].Array.data[3].y
@@ -2381,35 +2381,35 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7255545364974641388, guid: de8cfb4cfb7d4ec42aa9bd016840f298, type: 3}
       propertyPath: m_ColliderPaths.Array.data[0].m_ColliderPaths.Array.data[0].Array.data[0].X
-      value: -246433472
+      value: -246433424
       objectReference: {fileID: 0}
     - target: {fileID: 7255545364974641388, guid: de8cfb4cfb7d4ec42aa9bd016840f298, type: 3}
       propertyPath: m_ColliderPaths.Array.data[0].m_ColliderPaths.Array.data[0].Array.data[0].Y
-      value: 82639312
+      value: 82639320
       objectReference: {fileID: 0}
     - target: {fileID: 7255545364974641388, guid: de8cfb4cfb7d4ec42aa9bd016840f298, type: 3}
       propertyPath: m_ColliderPaths.Array.data[0].m_ColliderPaths.Array.data[0].Array.data[1].X
-      value: -249166592
+      value: -249166544
       objectReference: {fileID: 0}
     - target: {fileID: 7255545364974641388, guid: de8cfb4cfb7d4ec42aa9bd016840f298, type: 3}
       propertyPath: m_ColliderPaths.Array.data[0].m_ColliderPaths.Array.data[0].Array.data[1].Y
-      value: 82639312
+      value: 82639320
       objectReference: {fileID: 0}
     - target: {fileID: 7255545364974641388, guid: de8cfb4cfb7d4ec42aa9bd016840f298, type: 3}
       propertyPath: m_ColliderPaths.Array.data[0].m_ColliderPaths.Array.data[0].Array.data[2].X
-      value: -249166592
+      value: -249166544
       objectReference: {fileID: 0}
     - target: {fileID: 7255545364974641388, guid: de8cfb4cfb7d4ec42aa9bd016840f298, type: 3}
       propertyPath: m_ColliderPaths.Array.data[0].m_ColliderPaths.Array.data[0].Array.data[2].Y
-      value: 70960672
+      value: 70960680
       objectReference: {fileID: 0}
     - target: {fileID: 7255545364974641388, guid: de8cfb4cfb7d4ec42aa9bd016840f298, type: 3}
       propertyPath: m_ColliderPaths.Array.data[0].m_ColliderPaths.Array.data[0].Array.data[3].X
-      value: -246433472
+      value: -246433424
       objectReference: {fileID: 0}
     - target: {fileID: 7255545364974641388, guid: de8cfb4cfb7d4ec42aa9bd016840f298, type: 3}
       propertyPath: m_ColliderPaths.Array.data[0].m_ColliderPaths.Array.data[0].Array.data[3].Y
-      value: 70960672
+      value: 70960680
       objectReference: {fileID: 0}
     - target: {fileID: 7255545364974641388, guid: de8cfb4cfb7d4ec42aa9bd016840f298, type: 3}
       propertyPath: m_ColliderPaths.Array.data[1].m_ColliderPaths.Array.data[0].Array.data[0].X
@@ -2637,7 +2637,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7255545364974641388, guid: de8cfb4cfb7d4ec42aa9bd016840f298, type: 3}
       propertyPath: m_ColliderPaths.Array.data[8].m_ColliderPaths.Array.data[0].Array.data[0].X
-      value: -246433472
+      value: -246433424
       objectReference: {fileID: 0}
     - target: {fileID: 7255545364974641388, guid: de8cfb4cfb7d4ec42aa9bd016840f298, type: 3}
       propertyPath: m_ColliderPaths.Array.data[8].m_ColliderPaths.Array.data[0].Array.data[0].Y
@@ -2645,7 +2645,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7255545364974641388, guid: de8cfb4cfb7d4ec42aa9bd016840f298, type: 3}
       propertyPath: m_ColliderPaths.Array.data[8].m_ColliderPaths.Array.data[0].Array.data[1].X
-      value: -249166592
+      value: -249166544
       objectReference: {fileID: 0}
     - target: {fileID: 7255545364974641388, guid: de8cfb4cfb7d4ec42aa9bd016840f298, type: 3}
       propertyPath: m_ColliderPaths.Array.data[8].m_ColliderPaths.Array.data[0].Array.data[1].Y
@@ -2653,7 +2653,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7255545364974641388, guid: de8cfb4cfb7d4ec42aa9bd016840f298, type: 3}
       propertyPath: m_ColliderPaths.Array.data[8].m_ColliderPaths.Array.data[0].Array.data[2].X
-      value: -249166592
+      value: -249166544
       objectReference: {fileID: 0}
     - target: {fileID: 7255545364974641388, guid: de8cfb4cfb7d4ec42aa9bd016840f298, type: 3}
       propertyPath: m_ColliderPaths.Array.data[8].m_ColliderPaths.Array.data[0].Array.data[2].Y
@@ -2661,7 +2661,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7255545364974641388, guid: de8cfb4cfb7d4ec42aa9bd016840f298, type: 3}
       propertyPath: m_ColliderPaths.Array.data[8].m_ColliderPaths.Array.data[0].Array.data[3].X
-      value: -246433472
+      value: -246433424
       objectReference: {fileID: 0}
     - target: {fileID: 7255545364974641388, guid: de8cfb4cfb7d4ec42aa9bd016840f298, type: 3}
       propertyPath: m_ColliderPaths.Array.data[8].m_ColliderPaths.Array.data[0].Array.data[3].Y
@@ -3534,9 +3534,6 @@ MonoBehaviour:
   alcanceAtaque: 1
   danoAtaque: 10
   maxPulos: 2
-  groundLayer:
-    serializedVersion: 2
-    m_Bits: 0
 --- !u!66 &700685704
 CompositeCollider2D:
   m_ObjectHideFlags: 0
@@ -6159,7 +6156,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -718.9, y: -476.7}
+  m_AnchoredPosition: {x: -704, y: -407}
   m_SizeDelta: {x: 8.01, y: 2.032}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1808379383
@@ -11892,7 +11889,7 @@ Rigidbody2D:
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 0
-  m_Constraints: 0
+  m_Constraints: 4
 --- !u!212 &2117708872
 SpriteRenderer:
   m_ObjectHideFlags: 0
