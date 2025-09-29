@@ -1,17 +1,23 @@
-using UnityEngine;
+Ôªøusing UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class MenuController : MonoBehaviour
 {
-    // FunÁ„o chamada ao clicar no bot„o "Jogar"
+    // Fun√ß√£o chamada ao clicar no bot√£o "Jogar"
     public void StartGame()
     {
-        SceneManager.LoadScene("MainScene");  // Substitua "MainScene" pelo nome correto da sua cena do jogo
+        SceneManager.LoadScene("MainScene");
+        // ‚ö†Ô∏è Confirma que "MainScene" √© exatamente o nome da tua cena de jogo
     }
 
-    // FunÁ„o chamada ao clicar no bot„o "Sair"
+    // Fun√ß√£o chamada ao clicar no bot√£o "Sair"
     public void ExitGame()
     {
-        Application.Quit();  // Fecha o jogo
+        Application.Quit();  // Fecha o jogo na build final
+
+        // Para tamb√©m parar o Play Mode dentro do Unity Editor
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#endif
     }
 }
