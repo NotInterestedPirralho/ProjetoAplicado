@@ -1,10 +1,10 @@
-using UnityEngine;
-using UnityEngine.InputSystem; // novo input system
+﻿using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;   // necessário para LoadScene
 
 public class PauseManager : MonoBehaviour
 {
     public GameObject painelPause;
-
     private bool jogoPausado = false;
 
     void Start()
@@ -15,12 +15,10 @@ public class PauseManager : MonoBehaviour
 
     void Update()
     {
-        if (Keyboard.current.escapeKey.wasPressedThisFrame) // Novo Input System
+        if (Keyboard.current.escapeKey.wasPressedThisFrame)
         {
-            if (jogoPausado)
-                RetomarJogo();
-            else
-                PausarJogo();
+            if (jogoPausado) RetomarJogo();
+            else PausarJogo();
         }
     }
 
@@ -28,21 +26,21 @@ public class PauseManager : MonoBehaviour
     {
         Time.timeScale = 0f;
         jogoPausado = true;
-        if (painelPause != null)
-            painelPause.SetActive(true);
+        if (painelPause != null) painelPause.SetActive(true);
     }
 
     public void RetomarJogo()
     {
         Time.timeScale = 1f;
         jogoPausado = false;
-        if (painelPause != null)
-            painelPause.SetActive(false);
+        if (painelPause != null) painelPause.SetActive(false);
     }
 
-    public void SairDoJogo()
+    // 👉 Esta é a função que deves ligar ao botão Exit
+    public void SairParaMenu()
     {
-        Debug.Log("Sair do jogo...");
-        Application.Quit();
+        Time.timeScale = 1f;  // repõe o tempo
+        jogoPausado = false;
+        SceneManager.LoadScene("MainMenu"); // usa exatamente o nome da tua cena de menu
     }
 }

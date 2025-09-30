@@ -3892,7 +3892,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 266052328}
         m_TargetAssemblyTypeName: PauseManager, Assembly-CSharp
-        m_MethodName: SairDoJogo
+        m_MethodName: SairParaMenu
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
