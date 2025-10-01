@@ -1,146 +1,123 @@
 using UnityEngine;
-using UnityEngine.InputSystem; // Novo Input System
+using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(Rigidbody2D))]
+[RequireComponent(typeof(Animator))]
 [RequireComponent(typeof(Player))]
 public class PlayerController2D : MonoBehaviour
 {
     [Header("Movimento")]
-    public float velocidade = 5f;
-    public float forcaPulo = 7f;
+    [SerializeField] float velocidade = 5f;
+    [SerializeField] float forcaPulo = 7f;
+
+    [Header("Ground Check")]
+    [SerializeField] Transform groundCheck;          // arrasta no Inspector
+    [SerializeField] float groundRadius = 0.15f;
+    [SerializeField] LayerMask groundMask;           // escolhe a Layer Ground
 
     [Header("Combate")]
-    public float duracaoAtaque = 0.3f; // duração do ataque
-    public float alcanceAtaque = 1f;   // raio de alcance do ataque
-    public int danoAtaque = 10;        // dano aplicado
-    private bool atacando = false;
+    [SerializeField] float duracaoAtaque = 0.3f;
+    [SerializeField] float alcanceAtaque = 1f;
+    [SerializeField] int danoAtaque = 10;
+    [SerializeField] LayerMask inimigoMask;          // Layer dos inimigos
 
     [Header("Pulo")]
-    public int maxPulos = 2; // máximo de pulos permitidos
-    private int pulosRestantes;
+    [SerializeField] int maxPulos = 2;
 
-    private Rigidbody2D rb;
-    private Player player; // referência ao script Player
-    private Vector2 movimento;
-    private bool pular;
+    Rigidbody2D rb;
+    Animator anim;
+    Player player;
 
-    void Start()
-    {
+    Vector2 moveInput;
+    bool jumpQueued;
+    int pulosRestantes;
+    bool atacando;
+    bool facingRight = true;
+
+    void Awake(){
         rb = GetComponent<Rigidbody2D>();
+        anim = GetComponent<Animator>();
         player = GetComponent<Player>();
-        pulosRestantes = maxPulos; // começa podendo pular 2x
     }
 
-    void Update()
-    {
-        LerMovimento();
-        LerPulo();
-        LerAcoes();
+    void Start(){
+        pulosRestantes = maxPulos;
     }
 
-    void FixedUpdate()
-    {
-        AplicarMovimento();
-        AplicarPulo();
-    }
+    void FixedUpdate(){
+        // mover
+        rb.linearVelocity = new Vector2(moveInput.x * velocidade, rb.linearVelocity.y);
 
-    // =====================
-    // Movimento
-    // =====================
-    void LerMovimento()
-    {
-        movimento = Vector2.zero;
+        // virar sprite
+        if (moveInput.x > 0.05f && !facingRight) Flip();
+        else if (moveInput.x < -0.05f && facingRight) Flip();
 
-        if (Keyboard.current.aKey.isPressed)
-            movimento.x = -1;
-        if (Keyboard.current.dKey.isPressed)
-            movimento.x = 1;
-    }
-
-    void AplicarMovimento()
-    {
-        rb.linearVelocity = new Vector2(movimento.x * velocidade, rb.linearVelocity.y);
-    }
-
-    // =====================
-    // Pulo
-    // =====================
-    void LerPulo()
-    {
-        if (Keyboard.current.wKey.wasPressedThisFrame && pulosRestantes > 0)
-            pular = true;
-    }
-
-    void AplicarPulo()
-    {
-        if (pular)
-        {
-            rb.linearVelocity = new Vector2(rb.linearVelocity.x, forcaPulo);
-            pulosRestantes--; // gasta um pulo
-            pular = false;
+        // pulo (NOVA VERSÃO — permite 1 ou mais pulos consoante maxPulos)
+        if (jumpQueued && pulosRestantes > 0){
+        rb.linearVelocity = new Vector2(rb.linearVelocity.x, 0f);
+        rb.AddForce(Vector2.up * forcaPulo, ForceMode2D.Impulse);
+        pulosRestantes--;
+        jumpQueued = false;
         }
+
+
+        // parâmetros do Animator
+        anim.SetFloat("Speed", Mathf.Abs(rb.linearVelocity.x));
+        anim.SetBool("IsGrounded", IsGrounded());
     }
 
-    private void OnCollisionEnter2D(Collision2D collision)
-    {
-        if (collision.gameObject.CompareTag("Ground"))
-        {
-            pulosRestantes = maxPulos;
-        }
+    bool IsGrounded(){
+        return groundCheck
+            ? Physics2D.OverlapCircle(groundCheck.position, groundRadius, groundMask)
+            : false;
     }
 
-    // =====================
-    // Ataque, Defesa e Interação
-    // =====================
-    void LerAcoes()
-    {
-        // Ataque com o botão esquerdo do mouse
-        if (Mouse.current.leftButton.wasPressedThisFrame && !atacando)
-            StartCoroutine(Atacar());
-
-        // Defesa com o botão direito do mouse
-        player.SetDefendendo(Mouse.current.rightButton.isPressed);
-
-        // Interação com a tecla E
-        if (Keyboard.current.eKey.wasPressedThisFrame)
-            Interagir();
+    void OnCollisionEnter2D(Collision2D c){
+    if (c.gameObject.CompareTag("Ground"))
+        pulosRestantes = maxPulos = 2;
     }
 
-    System.Collections.IEnumerator Atacar()
+
+    void Flip(){
+        facingRight = !facingRight;
+        var s = transform.localScale; s.x *= -1f; transform.localScale = s;
+    }
+
+    // ------------------ INPUT ACTIONS (PlayerInput -> Send Messages) ------------------
+    public void OnMove(InputValue v){ moveInput = v.Get<Vector2>(); }
+    public void OnJump(UnityEngine.InputSystem.InputValue v)
     {
+    if (v.isPressed) jumpQueued = true;
+    }
+
+    public void OnAttack(UnityEngine.InputSystem.InputValue v)
+    {
+    if (!v.isPressed || atacando) return;
+    StartCoroutine(Atacar());
+    anim.SetTrigger("Attack");
+    }
+
+    public void OnDefend(UnityEngine.InputSystem.InputValue v)
+    {
+    player.SetDefendendo(v.isPressed);
+    }
+
+    public void OnInteract(InputValue v){ if (v.isPressed) Debug.Log("Interagir"); }
+    // ----------------------------------------------------------------------------------
+
+    System.Collections.IEnumerator Atacar(){
         atacando = true;
-        Debug.Log("Atacando!");
-
-        // Detecta inimigos dentro do alcance
-        Collider2D[] inimigos = Physics2D.OverlapCircleAll(transform.position, alcanceAtaque);
-        foreach (Collider2D inimigo in inimigos)
-        {
-            Enemy e = inimigo.GetComponent<Enemy>();
-            if (e != null)
-            {
-                e.TakeDamage(danoAtaque); // aplica dano
-            }
+        var hits = Physics2D.OverlapCircleAll(transform.position, alcanceAtaque, inimigoMask);
+        foreach (var h in hits){
+            var e = h.GetComponent<Enemy>();
+            if (e != null) e.TakeDamage(danoAtaque);
         }
-
         yield return new WaitForSeconds(duracaoAtaque);
         atacando = false;
     }
 
-    void Interagir()
-    {
-        Debug.Log("Interagindo!");
-    }
-
-    public bool EstaAtacando()
-    {
-        return atacando;
-    }
-
-    // =====================
-    // Para visualizar o alcance no Editor
-    // =====================
-    private void OnDrawGizmosSelected()
-    {
+    void OnDrawGizmosSelected(){
+        if (groundCheck) Gizmos.DrawWireSphere(groundCheck.position, groundRadius);
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, alcanceAtaque);
     }
