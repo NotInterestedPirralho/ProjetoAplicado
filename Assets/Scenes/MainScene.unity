@@ -2906,7 +2906,11 @@ Rigidbody2D:
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 0
+<<<<<<< Updated upstream
   m_Constraints: 0
+=======
+  m_Constraints: 4
+>>>>>>> Stashed changes
 --- !u!212 &2117708872
 SpriteRenderer:
   m_ObjectHideFlags: 0
