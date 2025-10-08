@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class Player : MonoBehaviour
+public class Player : MonoBehaviour, IResettableHealth   // <- implementa a interface para Respawn opcional
 {
     [Header("Vida")]
     public int vidaMaxima = 100;
@@ -8,9 +8,13 @@ public class Player : MonoBehaviour
 
     private bool defendendo;
 
+    [Header("Refs")]
+    [SerializeField] private DeathManager deathManager;   // <- arrasta no Inspector (ou � encontrado no Start)
+
     void Start()
     {
         vidaAtual = vidaMaxima;
+        if (deathManager == null) deathManager = FindObjectOfType<DeathManager>(); // fallback
     }
 
     // =====================
@@ -37,35 +41,47 @@ public class Player : MonoBehaviour
     {
         Debug.Log("Player morreu!");
 
-        // 👉 Em vez de destruir o jogador, chama a animação de morte:
-        var controller = GetComponent<PlayerController2D>();
-        if (controller != null)
-            controller.Die();
+        // Mostra a Death Screen e pausa o jogo
+        if (deathManager == null) deathManager = FindObjectOfType<DeathManager>();
+        deathManager?.ShowDeathScreen();
 
-        // ❌ Não destróis o objeto, o Animator faz a animação de morte.
-        // Destroy(gameObject); <-- removido
+        // Desativa o jogador sem destruir
+        var rb2d = GetComponent<Rigidbody2D>();
+        if (rb2d) { rb2d.velocity = Vector2.zero; rb2d.angularVelocity = 0f; rb2d.simulated = false; }
+
+        var col = GetComponent<Collider2D>();
+        if (col) col.enabled = false;
+
+        var sr = GetComponent<SpriteRenderer>();
+        if (sr) sr.enabled = false;
+    }
+
+    // =====================
+    // Respawn support (se usares DeathManager.Respawn)
+    // =====================
+    public void ResetHealth()
+    {
+        vidaAtual = vidaMaxima;
+
+        var rb2d = GetComponent<Rigidbody2D>();
+        if (rb2d) rb2d.simulated = true;
+
+        var col = GetComponent<Collider2D>();
+        if (col) col.enabled = true;
+
+        var sr = GetComponent<SpriteRenderer>();
+        if (sr) sr.enabled = true;
     }
 
     // =====================
     // Controle de estados
     // =====================
-    public void SetDefendendo(bool estado)
-    {
-        defendendo = estado;
-    }
-
-    public bool EstaDefendendo()
-    {
-        return defendendo;
-    }
-
-    public int GetVidaAtual()
-    {
-        return vidaAtual;
-    }
+    public void SetDefendendo(bool estado) => defendendo = estado;
+    public bool EstaDefendendo() => defendendo;
+    public int GetVidaAtual() => vidaAtual;
 
     // =====================
-    // Colisão com inimigos
+    // Colis�o com inimigos
     // =====================
     private void OnCollisionEnter2D(Collision2D collision)
     {
