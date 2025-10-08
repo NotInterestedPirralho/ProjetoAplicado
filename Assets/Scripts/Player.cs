@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class Player : MonoBehaviour
+public class Player : MonoBehaviour, IResettableHealth   // <- implementa a interface para Respawn opcional
 {
     [Header("Vida")]
     public int vidaMaxima = 100;
@@ -8,9 +8,13 @@ public class Player : MonoBehaviour
 
     private bool defendendo;
 
+    [Header("Refs")]
+    [SerializeField] private DeathManager deathManager;   // <- arrasta no Inspector (ou é encontrado no Start)
+
     void Start()
     {
         vidaAtual = vidaMaxima;
+        if (deathManager == null) deathManager = FindObjectOfType<DeathManager>(); // fallback
     }
 
     // =====================
@@ -36,26 +40,45 @@ public class Player : MonoBehaviour
     private void Morrer()
     {
         Debug.Log("Player morreu!");
-        Destroy(gameObject);
+
+        // Mostra a Death Screen e pausa o jogo
+        if (deathManager == null) deathManager = FindObjectOfType<DeathManager>();
+        deathManager?.ShowDeathScreen();
+
+        // Desativa o jogador sem destruir
+        var rb2d = GetComponent<Rigidbody2D>();
+        if (rb2d) { rb2d.velocity = Vector2.zero; rb2d.angularVelocity = 0f; rb2d.simulated = false; }
+
+        var col = GetComponent<Collider2D>();
+        if (col) col.enabled = false;
+
+        var sr = GetComponent<SpriteRenderer>();
+        if (sr) sr.enabled = false;
+    }
+
+    // =====================
+    // Respawn support (se usares DeathManager.Respawn)
+    // =====================
+    public void ResetHealth()
+    {
+        vidaAtual = vidaMaxima;
+
+        var rb2d = GetComponent<Rigidbody2D>();
+        if (rb2d) rb2d.simulated = true;
+
+        var col = GetComponent<Collider2D>();
+        if (col) col.enabled = true;
+
+        var sr = GetComponent<SpriteRenderer>();
+        if (sr) sr.enabled = true;
     }
 
     // =====================
     // Controle de estados
     // =====================
-    public void SetDefendendo(bool estado)
-    {
-        defendendo = estado;
-    }
-
-    public bool EstaDefendendo()
-    {
-        return defendendo;
-    }
-
-    public int GetVidaAtual()
-    {
-        return vidaAtual;
-    }
+    public void SetDefendendo(bool estado) => defendendo = estado;
+    public bool EstaDefendendo() => defendendo;
+    public int GetVidaAtual() => vidaAtual;
 
     // =====================
     // Colisão com inimigos

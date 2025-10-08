@@ -3,21 +3,37 @@ using UnityEngine.SceneManagement;
 
 public class MenuController : MonoBehaviour
 {
+    [Header("Painéis do Menu")]
+    public GameObject mainPanel;
+    public GameObject settingsPanel;
+
     // Função chamada ao clicar no botão "Jogar"
     public void StartGame()
     {
         SceneManager.LoadScene("MainScene");
-        // ⚠️ Confirma que "MainScene" é exatamente o nome da tua cena de jogo
     }
 
     // Função chamada ao clicar no botão "Sair"
     public void ExitGame()
     {
-        Application.Quit();  // Fecha o jogo na build final
+        Application.Quit();
 
-        // Para também parar o Play Mode dentro do Unity Editor
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
 #endif
+    }
+
+    // Abre o painel de definições
+    public void OpenSettings()
+    {
+        mainPanel.SetActive(false);
+        settingsPanel.SetActive(true);
+    }
+
+    // Volta ao menu principal
+    public void BackToMenu()
+    {
+        mainPanel.SetActive(true);
+        settingsPanel.SetActive(false);
     }
 }
