@@ -36,7 +36,14 @@ public class Player : MonoBehaviour
     private void Morrer()
     {
         Debug.Log("Player morreu!");
-        Destroy(gameObject);
+
+        // 👉 Em vez de destruir o jogador, chama a animação de morte:
+        var controller = GetComponent<PlayerController2D>();
+        if (controller != null)
+            controller.Die();
+
+        // ❌ Não destróis o objeto, o Animator faz a animação de morte.
+        // Destroy(gameObject); <-- removido
     }
 
     // =====================
@@ -58,7 +65,7 @@ public class Player : MonoBehaviour
     }
 
     // =====================
-    // Colis�o com inimigos
+    // Colisão com inimigos
     // =====================
     private void OnCollisionEnter2D(Collision2D collision)
     {
