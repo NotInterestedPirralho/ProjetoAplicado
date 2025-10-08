@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.InputSystem; // Novo Input System
 
 [RequireComponent(typeof(Rigidbody2D))]
+[RequireComponent(typeof(Player))]
 public class PlayerController2D : MonoBehaviour
 {
     [Header("Movimento")]
@@ -10,16 +11,24 @@ public class PlayerController2D : MonoBehaviour
 
     [Header("Combate")]
     public float duracaoAtaque = 0.3f; // duração do ataque
+    public float alcanceAtaque = 1f;   // raio de alcance do ataque
+    public int danoAtaque = 10;        // dano aplicado
     private bool atacando = false;
-    private bool defendendo = false;
+
+    [Header("Pulo")]
+    public int maxPulos = 2; // máximo de pulos permitidos
+    private int pulosRestantes;
 
     private Rigidbody2D rb;
+    private Player player; // referência ao script Player
     private Vector2 movimento;
     private bool pular;
 
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+        player = GetComponent<Player>();
+        pulosRestantes = maxPulos; // começa podendo pular 2x
     }
 
     void Update()
@@ -58,7 +67,7 @@ public class PlayerController2D : MonoBehaviour
     // =====================
     void LerPulo()
     {
-        if (Keyboard.current.wKey.wasPressedThisFrame)
+        if (Keyboard.current.wKey.wasPressedThisFrame && pulosRestantes > 0)
             pular = true;
     }
 
@@ -67,7 +76,16 @@ public class PlayerController2D : MonoBehaviour
         if (pular)
         {
             rb.linearVelocity = new Vector2(rb.linearVelocity.x, forcaPulo);
+            pulosRestantes--; // gasta um pulo
             pular = false;
+        }
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.CompareTag("Ground"))
+        {
+            pulosRestantes = maxPulos;
         }
     }
 
@@ -81,10 +99,7 @@ public class PlayerController2D : MonoBehaviour
             StartCoroutine(Atacar());
 
         // Defesa com o botão direito do mouse
-        if (Mouse.current.rightButton.isPressed)
-            defendendo = true;
-        else
-            defendendo = false;
+        player.SetDefendendo(Mouse.current.rightButton.isPressed);
 
         // Interação com a tecla E
         if (Keyboard.current.eKey.wasPressedThisFrame)
@@ -95,7 +110,18 @@ public class PlayerController2D : MonoBehaviour
     {
         atacando = true;
         Debug.Log("Atacando!");
-        // Aqui você poderia disparar animação, ativar hitbox etc.
+
+        // Detecta inimigos dentro do alcance
+        Collider2D[] inimigos = Physics2D.OverlapCircleAll(transform.position, alcanceAtaque);
+        foreach (Collider2D inimigo in inimigos)
+        {
+            Enemy e = inimigo.GetComponent<Enemy>();
+            if (e != null)
+            {
+                e.TakeDamage(danoAtaque); // aplica dano
+            }
+        }
+
         yield return new WaitForSeconds(duracaoAtaque);
         atacando = false;
     }
@@ -103,19 +129,19 @@ public class PlayerController2D : MonoBehaviour
     void Interagir()
     {
         Debug.Log("Interagindo!");
-        // Aqui você colocaria lógica de interação com objetos (ex: abrir porta, pegar item)
-    }
-
-    // =====================
-    // Utilitários
-    // =====================
-    public bool EstaDefendendo()
-    {
-        return defendendo;
     }
 
     public bool EstaAtacando()
     {
         return atacando;
+    }
+
+    // =====================
+    // Para visualizar o alcance no Editor
+    // =====================
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, alcanceAtaque);
     }
 }

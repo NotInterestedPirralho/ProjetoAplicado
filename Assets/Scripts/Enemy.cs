@@ -2,7 +2,23 @@ using UnityEngine;
 
 public class Enemy : MonoBehaviour
 {
-    public int health = 100;
+    public int healthMaximo = 100;
+    public int health;
+    public int dano = 10;
+
+    private EnemyHealthUI barraVida;
+
+    void Start()
+    {
+        health = healthMaximo;
+
+        // tenta pegar o script da barra se estiver como child
+        barraVida = GetComponentInChildren<EnemyHealthUI>();
+        if (barraVida != null)
+        {
+            barraVida.enemy = this;
+        }
+    }
 
     public void TakeDamage(int amount)
     {
@@ -15,6 +31,13 @@ public class Enemy : MonoBehaviour
 
     private void Die()
     {
-        Destroy(gameObject);
+        // Notifica a barra que o inimigo morreu
+        if (barraVida != null)
+        {
+            barraVida.InimigoMorreu();
+        }
+
+        // destrói o inimigo após alguns segundos (opcional)
+        Destroy(gameObject, 0.1f);
     }
 }
