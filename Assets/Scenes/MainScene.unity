@@ -2907,7 +2907,15 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
   m_Constraints: 0
+=======
+  m_Constraints: 4
+>>>>>>> Stashed changes
+=======
+  m_Constraints: 4
+>>>>>>> Stashed changes
 =======
   m_Constraints: 4
 >>>>>>> Stashed changes
