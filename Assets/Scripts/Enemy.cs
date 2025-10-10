@@ -37,6 +37,13 @@ public class Enemy : MonoBehaviour
             barraVida.InimigoMorreu();
         }
 
+        // mostra a win screen
+        var deathManager = FindObjectOfType<DeathManager>();
+        if (deathManager != null)
+        {
+            deathManager.ShowWinScreen();
+        }
+
         // destrói o inimigo após alguns segundos (opcional)
         Destroy(gameObject, 0.1f);
     }
