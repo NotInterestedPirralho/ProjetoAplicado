@@ -102,7 +102,7 @@ public class Player : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Enemy"))
         {
-            TomarDano(10); // perde 10 de vida ao encostar no inimigo
+            TomarDano(5); // perde 10 de vida ao encostar no inimigo
         }
-    }
+    } 
 }
