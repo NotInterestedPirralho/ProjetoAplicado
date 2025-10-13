@@ -10,28 +10,41 @@ public class OrcController2D : MonoBehaviour
     [SerializeField] float velocidade = 2.5f;
     [SerializeField] float forcaPulo = 7f;
 
-    [Header("Dete��o")]
+    [Header("Deteção")]
     [SerializeField] float alcanceVisao = 12f;
     [SerializeField] float alcanceAtaque = 1.2f;
     [SerializeField] LayerMask groundMask;
     [SerializeField] LayerMask playerMask;
 
     [Header("Pontos de checagem")]
-    [SerializeField] Transform groundCheck;     // um empty no p� do orc
-    [SerializeField] Transform frenteCheck;     // um empty � frente do orc (na altura do p�)
-    [SerializeField] Transform attackPoint;     // um empty � frente do orc (na altura da arma)
+    [SerializeField] Transform groundCheck;   // empty no pé
+    [SerializeField] Transform frenteCheck;   // empty à frente ao nível do pé
+    [SerializeField] Transform attackPoint;   // empty à frente à altura da arma
 
     [Header("Combate")]
     [SerializeField] int danoAtaque = 10;
-    [SerializeField] float cooldownAtaque = 0.6f;
+    [SerializeField] float cooldownAtaque = 0.8f;   // tempo entre ataques
+
+    [Header("Recuo após atacar")]
+    [SerializeField] float tempoRetirada = 0.35f;
+    [SerializeField] float velocidadeRetirada = 3f;
+
+    [Header("Salto (anti-spam)")]
+    [SerializeField] bool permitirSalto = true;     // desliga se não quiseres saltos
+    [SerializeField] float intervaloSalto = 0.6f;   // mínimo entre saltos
+    [SerializeField] float margemBorda = 0.45f;     // profundidade do raycast para detetar “sem chão”
+    [SerializeField] float alcanceParede = 0.35f;   // comprimento do raycast frontal
 
     Rigidbody2D rb;
     Animator anim;
     Enemy enemy;
 
-    Transform alvo;              // Player
+    Transform alvo;
     bool podeAtacar = true;
     bool viradoDireita = true;
+    bool emRetirada = false;
+
+    float proximoSalto = 0f;
 
     // hashes
     int idSpeed, idAttack;
@@ -48,7 +61,6 @@ public class OrcController2D : MonoBehaviour
 
     void Start()
     {
-        // Encontrar player por Tag
         var go = GameObject.FindGameObjectWithTag("Player");
         if (go) alvo = go.transform;
     }
@@ -56,22 +68,28 @@ public class OrcController2D : MonoBehaviour
     void Update()
     {
         if (!alvo) return;
-        if (!rb.simulated) return; // caso morra e congeles f�sica
+        if (!rb.simulated) return; // morreu
 
-        float dist = Vector2.Distance(transform.position, alvo.position);
-
-        // dentro da vis�o?
-        if (dist > alcanceVisao)
+        if (emRetirada)
         {
-            // parado/idle
-            SetSpeedParam(0f);
+            // durante a retirada, não persegue/ataca; velocidade vem da corrotina
+            SetSpeedParam(Mathf.Abs(rb.linearVelocity.x));
             return;
         }
 
-        // dentro do alcance de ataque?
+        float dist = Vector2.Distance(transform.position, alvo.position);
+
+        // Fora de visão → Idle
+        if (dist > alcanceVisao)
+        {
+            Parar();
+            return;
+        }
+
+        // Dentro do alcance de ataque → ataca (com cooldown)
         if (dist <= alcanceAtaque && podeAtacar)
         {
-            rb.linearVelocity = new Vector2(0f, rb.linearVelocity.y);
+            Parar();
             StartCoroutine(Atacar());
             return;
         }
@@ -80,16 +98,23 @@ public class OrcController2D : MonoBehaviour
         float dir = Mathf.Sign(alvo.position.x - transform.position.x);
         rb.linearVelocity = new Vector2(dir * velocidade, rb.linearVelocity.y);
         SetSpeedParam(Mathf.Abs(rb.linearVelocity.x));
+        VirarSePrecisar(dir);
 
-        // Virar sprite
-        if (dir > 0 && !viradoDireita) Flip();
-        else if (dir < 0 && viradoDireita) Flip();
-
-        // Saltar se houver obst�culo baixo � frente ou um pequeno �buraco�
-        if (NoChao() && (ObstaculoBaixoAFrente() || BordaSemChaoAFrente()))
+        // SALTO SÓ QUANDO PRECISO
+        if (permitirSalto && NoChao() && Time.time >= proximoSalto)
         {
-            rb.linearVelocity = new Vector2(rb.linearVelocity.x, 0f);
-            rb.AddForce(Vector2.up * forcaPulo, ForceMode2D.Impulse);
+            bool paredeAFrente = ObstaculoBaixoAFrente();
+            bool beiraSemChao = BordaSemChaoAFrente();
+
+            // Regra: salta se houver parede à frente; ou se houver beira mas o player estiver claramente acima
+            bool precisaSaltar = paredeAFrente || (beiraSemChao && (alvo.position.y - transform.position.y) > 0.5f);
+
+            if (precisaSaltar)
+            {
+                proximoSalto = Time.time + intervaloSalto;
+                rb.linearVelocity = new Vector2(rb.linearVelocity.x, 0f);
+                rb.AddForce(Vector2.up * forcaPulo, ForceMode2D.Impulse);
+            }
         }
     }
 
@@ -98,10 +123,10 @@ public class OrcController2D : MonoBehaviour
         podeAtacar = false;
         if (anim) anim.SetTrigger(idAttack);
 
-        // pequena espera para sincronizar com o frame de impacto (ajusta 0.15f)
+        // espera para sincronizar com o frame do impacto
         yield return new WaitForSeconds(0.15f);
 
-        // dano em �rea � frente
+        // aplicar dano numa área à frente
         if (attackPoint)
         {
             Collider2D[] hits = Physics2D.OverlapCircleAll(attackPoint.position, 0.4f, playerMask);
@@ -112,14 +137,43 @@ public class OrcController2D : MonoBehaviour
             }
         }
 
+        // recuar depois de atacar
+        if (alvo != null)
+        {
+            emRetirada = true;
+            float dirLonge = Mathf.Sign(transform.position.x - alvo.position.x); // para longe do player
+            float t = 0f;
+            while (t < tempoRetirada)
+            {
+                rb.linearVelocity = new Vector2(dirLonge * velocidadeRetirada, rb.linearVelocity.y);
+                SetSpeedParam(Mathf.Abs(rb.linearVelocity.x));
+                t += Time.deltaTime;
+                yield return null;
+            }
+            emRetirada = false;
+        }
+
+        // cooldown entre ataques
         yield return new WaitForSeconds(cooldownAtaque);
         podeAtacar = true;
     }
 
     // --------- Helpers ----------
+    void Parar()
+    {
+        rb.linearVelocity = new Vector2(0f, rb.linearVelocity.y);
+        SetSpeedParam(0f);
+    }
+
     void SetSpeedParam(float s)
     {
         if (anim) anim.SetFloat(idSpeed, s);
+    }
+
+    void VirarSePrecisar(float dir)
+    {
+        if (dir > 0 && !viradoDireita) Flip();
+        else if (dir < 0 && viradoDireita) Flip();
     }
 
     void Flip()
@@ -139,17 +193,15 @@ public class OrcController2D : MonoBehaviour
     bool ObstaculoBaixoAFrente()
     {
         if (!frenteCheck) return false;
-        // raycast curto � frente para apanhar paredes/blocos
         Vector2 dir = viradoDireita ? Vector2.right : Vector2.left;
-        var hit = Physics2D.Raycast(frenteCheck.position, dir, 0.35f, groundMask);
+        var hit = Physics2D.Raycast(frenteCheck.position, dir, alcanceParede, groundMask);
         return hit.collider != null;
     }
 
     bool BordaSemChaoAFrente()
     {
         if (!frenteCheck) return false;
-        // raycast para baixo � frente -> se n�o encontra ch�o, � borda
-        var hit = Physics2D.Raycast(frenteCheck.position, Vector2.down, 0.4f, groundMask);
+        var hit = Physics2D.Raycast(frenteCheck.position, Vector2.down, margemBorda, groundMask);
         return hit.collider == null;
     }
 
@@ -161,8 +213,9 @@ public class OrcController2D : MonoBehaviour
 
         if (frenteCheck)
         {
-            Gizmos.DrawLine(frenteCheck.position, frenteCheck.position + (viradoDireita ? Vector3.right : Vector3.left) * 0.35f);
-            Gizmos.DrawLine(frenteCheck.position, frenteCheck.position + Vector3.down * 0.4f);
+            Vector3 dir = (viradoDireita ? Vector3.right : Vector3.left) * alcanceParede;
+            Gizmos.DrawLine(frenteCheck.position, frenteCheck.position + dir);
+            Gizmos.DrawLine(frenteCheck.position, frenteCheck.position + Vector3.down * margemBorda);
         }
     }
 }

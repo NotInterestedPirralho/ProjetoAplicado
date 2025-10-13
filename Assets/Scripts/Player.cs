@@ -6,6 +6,9 @@ public class Player : MonoBehaviour
     public int vidaMaxima = 100;
     private int vidaAtual;
 
+    [Tooltip("Se TRUE, o player leva dano ao encostar no inimigo. Normalmente deixa FALSE.")]
+    public bool danoPorToque = false;
+
     private bool defendendo;
 
     // ---- Animator / params ----
@@ -14,7 +17,7 @@ public class Player : MonoBehaviour
     int hashIsDead;     // Bool "IsDead" (opcional)
     bool hasHit, hasIsDead;
 
-    // pequeno “cooldown” para não spammar o Hit
+    // pequeno cooldown para não spammar o Hit
     float hitCooldown = 0.15f;
     float lastHitTime = -999f;
 
@@ -25,14 +28,14 @@ public class Player : MonoBehaviour
         anim = GetComponent<Animator>();
         if (anim)
         {
-            hashHit    = Animator.StringToHash("Hit");
+            hashHit = Animator.StringToHash("Hit");
             hashIsDead = Animator.StringToHash("IsDead");
 
             // detetar de forma segura se os parâmetros existem no controller
             foreach (var p in anim.parameters)
             {
                 if (p.type == AnimatorControllerParameterType.Trigger && p.nameHash == hashHit) hasHit = true;
-                if (p.type == AnimatorControllerParameterType.Bool    && p.nameHash == hashIsDead) hasIsDead = true;
+                if (p.type == AnimatorControllerParameterType.Bool && p.nameHash == hashIsDead) hasIsDead = true;
             }
         }
     }
@@ -80,29 +83,17 @@ public class Player : MonoBehaviour
     // =====================
     // Controle de estados
     // =====================
-    public void SetDefendendo(bool estado)
-    {
-        defendendo = estado;
-    }
-
-    public bool EstaDefendendo()
-    {
-        return defendendo;
-    }
-
-    public int GetVidaAtual()
-    {
-        return vidaAtual;
-    }
+    public void SetDefendendo(bool estado) => defendendo = estado;
+    public bool EstaDefendendo() => defendendo;
+    public int GetVidaAtual() => vidaAtual;
 
     // =====================
-    // Colisão com inimigos
+    // Colisão com inimigos (opcional, deixa FALSE para evitar dano duplo)
     // =====================
     private void OnCollisionEnter2D(Collision2D collision)
     {
+        if (!danoPorToque) return;
         if (collision.gameObject.CompareTag("Enemy"))
-        {
-            TomarDano(5); // perde 10 de vida ao encostar no inimigo
-        }
-    } 
+            TomarDano(5);
+    }
 }
