@@ -5,10 +5,16 @@ public class DeathManager : MonoBehaviour
 {
     [Header("UI")]
     [SerializeField] private GameObject deathPanel;
+    [SerializeField] private GameObject winPanel;          // <- NOVO: painel de vitória
 
     [Header("Referências")]
     [SerializeField] private Transform player;
     [SerializeField] private Transform bot;
+
+    [Header("Inimigos / Vitória")]
+    [Tooltip("Arrasta aqui todos os inimigos da cena (componentes Enemy). A vitória acontece quando todos morrerem.")]
+    [SerializeField] private Enemy[] enemies;              // <- NOVO
+    private int enemiesVivos = 0;                          // <- NOVO
 
     [Header("Comportamento")]
     [Tooltip("Se este objeto estiver marcado como DontDestroyOnLoad, destrói-o ao entrar no MainMenu.")]
@@ -20,7 +26,8 @@ public class DeathManager : MonoBehaviour
 
     private void Awake()
     {
-        if (deathPanel != null) deathPanel.SetActive(false);
+        if (deathPanel) deathPanel.SetActive(false);
+        if (winPanel) winPanel.SetActive(false);         // <- NOVO
 
         if (player != null)
         {
@@ -37,11 +44,33 @@ public class DeathManager : MonoBehaviour
     private void OnEnable()
     {
         SceneManager.sceneLoaded += OnSceneLoaded;
+
+        // subscreve aos eventos de morte dos inimigos (se existirem)
+        enemiesVivos = 0;
+        if (enemies != null)
+        {
+            foreach (var e in enemies)
+            {
+                if (e == null) continue;
+                enemiesVivos++;
+                e.Died += OnEnemyDied;                     // <- NOVO
+            }
+        }
     }
 
     private void OnDisable()
     {
         SceneManager.sceneLoaded -= OnSceneLoaded;
+
+        // remove subscrições
+        if (enemies != null)
+        {
+            foreach (var e in enemies)
+            {
+                if (e == null) continue;
+                e.Died -= OnEnemyDied;                     // <- NOVO
+            }
+        }
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
@@ -49,8 +78,9 @@ public class DeathManager : MonoBehaviour
         // Sempre que muda de cena, garante que o jogo não fica “pausado”
         Time.timeScale = 1f;
 
-        // E que não há overlay a bloquear cliques
-        if (deathPanel != null) deathPanel.SetActive(false);
+        // E que não há overlays activos
+        if (deathPanel) deathPanel.SetActive(false);
+        if (winPanel) winPanel.SetActive(false);         // <- NOVO
 
         // Se este manager for persistente, remove-o ao entrar no menu principal
         if (destroyOnMenu && scene.name == "MainMenu")
@@ -62,8 +92,36 @@ public class DeathManager : MonoBehaviour
     // chamado quando o player morre
     public void ShowDeathScreen()
     {
-        if (deathPanel != null) deathPanel.SetActive(true);
+        if (winPanel) winPanel.SetActive(false);         // <- NOVO: garante que só uma está visível
+        if (deathPanel) deathPanel.SetActive(true);
         Time.timeScale = 0f; // pausa o jogo
+    }
+
+    // === VITÓRIA ===
+    private void OnEnemyDied()                              // <- NOVO
+    {
+        enemiesVivos--;
+        if (enemiesVivos <= 0)
+            ShowWinningScreen();
+    }
+
+    public void ShowWinningScreen()                         // <- NOVO
+    {
+        if (deathPanel) deathPanel.SetActive(false);
+        if (winPanel) winPanel.SetActive(true);
+        Time.timeScale = 0f; // pausa para mostrar UI de vitória
+    }
+
+    // Botão “Next Level” (se tiveres cenas em Build Settings)
+    public void NextLevel()                                 // <- OPCIONAL
+    {
+        Time.timeScale = 1f;
+        Scene active = SceneManager.GetActiveScene();
+        int nextIndex = active.buildIndex + 1;
+        if (nextIndex < SceneManager.sceneCountInBuildSettings)
+            SceneManager.LoadScene(nextIndex, LoadSceneMode.Single);
+        else
+            SceneManager.LoadScene("MainMenu", LoadSceneMode.Single); // fallback
     }
 
     // Opção A: reiniciar a cena (reset total)
@@ -110,14 +168,15 @@ public class DeathManager : MonoBehaviour
             if (ai != null) ai.ResetAI();
         }
 
-        if (deathPanel != null) deathPanel.SetActive(false);
+        if (deathPanel) deathPanel.SetActive(false);
+        if (winPanel) winPanel.SetActive(false);         // <- NOVO
     }
 
     public void BackToMenu()
     {
-        // repõe imediatamente antes de trocar de cena
         Time.timeScale = 1f;
-        if (deathPanel != null) deathPanel.SetActive(false);
+        if (deathPanel) deathPanel.SetActive(false);
+        if (winPanel) winPanel.SetActive(false);         // <- NOVO
 
         SceneManager.LoadScene("MainMenu", LoadSceneMode.Single);
     }
