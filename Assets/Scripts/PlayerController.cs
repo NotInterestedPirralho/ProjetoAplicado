@@ -11,18 +11,21 @@ public class PlayerController2D : MonoBehaviour
     public float forcaPulo = 7f;
 
     [Header("Combate")]
-    public float duracaoAtaque = 0.3f; // duração do ataque
-    public float alcanceAtaque = 1f;   // raio de alcance do ataque
-    public int danoAtaque = 10;        // dano aplicado
+    public float duracaoAtaque = 0.3f;
+    public float alcanceAtaque = 1f;
+    public int danoAtaque = 10;
     private bool atacando = false;
 
     [Header("Pulo")]
-    public int maxPulos = 2; // máximo de pulos permitidos
+    public int maxPulos = 2;
     private int pulosRestantes;
 
+    [Header("UI/Managers")]
+    [SerializeField] private DeathManager deathManager; // opcional (fallback com Find)
+
     private Rigidbody2D rb;
-    private Player player;     // referência ao script Player
-    private Animator anim;     // referência ao Animator
+    private Player player;
+    private Animator anim;
 
     private Vector2 movimento;
     private bool pular;
@@ -36,24 +39,24 @@ public class PlayerController2D : MonoBehaviour
 
     void Start()
     {
-        rb     = GetComponent<Rigidbody2D>();
+        rb = GetComponent<Rigidbody2D>();
         player = GetComponent<Player>();
-        anim   = GetComponent<Animator>();
+        anim = GetComponent<Animator>();
 
-        pulosRestantes = maxPulos; // começa podendo pular 2x
+        pulosRestantes = maxPulos;
 
         // Detectar parâmetros existentes no Animator (seguro)
-        hasSpeedParam   = HasParam("Speed",  AnimatorControllerParameterType.Float);
-        hasAttackParam  = HasParam("Attack", AnimatorControllerParameterType.Trigger);
-        hasDefendParam  = HasParam("Defend", AnimatorControllerParameterType.Bool);
-        hasDeathParam   = HasParam("Death",  AnimatorControllerParameterType.Trigger);
-        hasIsDeadParam  = HasParam("IsDead", AnimatorControllerParameterType.Bool);
-        hasHitParam     = HasParam("Hit",    AnimatorControllerParameterType.Trigger);
+        hasSpeedParam = HasParam("Speed", AnimatorControllerParameterType.Float);
+        hasAttackParam = HasParam("Attack", AnimatorControllerParameterType.Trigger);
+        hasDefendParam = HasParam("Defend", AnimatorControllerParameterType.Bool);
+        hasDeathParam = HasParam("Death", AnimatorControllerParameterType.Trigger);
+        hasIsDeadParam = HasParam("IsDead", AnimatorControllerParameterType.Bool);
+        hasHitParam = HasParam("Hit", AnimatorControllerParameterType.Trigger);
     }
 
     void Update()
     {
-        if (isDead) return; // morto = ignora inputs
+        if (isDead) return;
 
         LerMovimento();
         LerPulo();
@@ -67,7 +70,6 @@ public class PlayerController2D : MonoBehaviour
         AplicarMovimento();
         AplicarPulo();
 
-        // >>> Alimentar o Animator (Idle <-> Walk)
         if (hasSpeedParam)
             anim.SetFloat("Speed", Mathf.Abs(rb.linearVelocity.x));
     }
@@ -79,17 +81,14 @@ public class PlayerController2D : MonoBehaviour
     {
         movimento = Vector2.zero;
 
-        if (Keyboard.current.aKey.isPressed)
-            movimento.x = -1;
-        if (Keyboard.current.dKey.isPressed)
-            movimento.x = 1;
+        if (Keyboard.current.aKey.isPressed) movimento.x = -1;
+        if (Keyboard.current.dKey.isPressed) movimento.x = 1;
     }
 
     void AplicarMovimento()
     {
         rb.linearVelocity = new Vector2(movimento.x * velocidade, rb.linearVelocity.y);
 
-        // Flip de acordo com a direcção do movimento
         if (movimento.x > 0f && !facingRight) Flip();
         else if (movimento.x < 0f && facingRight) Flip();
     }
@@ -114,20 +113,17 @@ public class PlayerController2D : MonoBehaviour
 
     void AplicarPulo()
     {
-        if (pular)
-        {
-            rb.linearVelocity = new Vector2(rb.linearVelocity.x, forcaPulo);
-            pulosRestantes--; // gasta um pulo
-            pular = false;
-        }
+        if (!pular) return;
+
+        rb.linearVelocity = new Vector2(rb.linearVelocity.x, forcaPulo);
+        pulosRestantes--;
+        pular = false;
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
         if (collision.gameObject.CompareTag("Ground"))
-        {
             pulosRestantes = maxPulos;
-        }
     }
 
     // =====================
@@ -135,16 +131,13 @@ public class PlayerController2D : MonoBehaviour
     // =====================
     void LerAcoes()
     {
-        // Ataque com o botão esquerdo do mouse
         if (Mouse.current.leftButton.wasPressedThisFrame && !atacando)
             StartCoroutine(Atacar());
 
-        // Defesa com o botão direito do mouse (mantido enquanto carregares)
         bool defending = Mouse.current.rightButton.isPressed;
         player.SetDefendendo(defending);
         if (hasDefendParam) anim.SetBool("Defend", defending);
 
-        // Interação com a tecla E
         if (Keyboard.current.eKey.wasPressedThisFrame)
             Interagir();
     }
@@ -154,15 +147,11 @@ public class PlayerController2D : MonoBehaviour
         atacando = true;
         if (hasAttackParam) anim.SetTrigger("Attack");
 
-        // Detecta inimigos dentro do alcance
         Collider2D[] inimigos = Physics2D.OverlapCircleAll(transform.position, alcanceAtaque);
         foreach (Collider2D inimigo in inimigos)
         {
             Enemy e = inimigo.GetComponent<Enemy>();
-            if (e != null)
-            {
-                e.TakeDamage(danoAtaque); // aplica dano
-            }
+            if (e != null) e.TakeDamage(danoAtaque);
         }
 
         yield return new WaitForSeconds(duracaoAtaque);
@@ -177,7 +166,7 @@ public class PlayerController2D : MonoBehaviour
     public bool EstaAtacando() => atacando;
 
     // =====================
-    // NOVO: Hit
+    // Hit
     // =====================
     public void Hit()
     {
@@ -193,20 +182,20 @@ public class PlayerController2D : MonoBehaviour
         if (isDead) return;
         isDead = true;
 
-        // pára movimento e congela física
         rb.linearVelocity = Vector2.zero;
-        rb.simulated = false; // congela corpo
+        rb.simulated = false;
 
-        // desliga controlos de input (mas mantém este script activo para receber Animation Events)
         var input = GetComponent<PlayerInput>();
         if (input) input.enabled = false;
 
-        // parâmetros de animação
         if (hasIsDeadParam) anim.SetBool("IsDead", true);
-        if (hasDeathParam)  anim.SetTrigger("Death");
+        if (hasDeathParam) anim.SetTrigger("Death");
+        if (hasSpeedParam) anim.SetFloat("Speed", 0f);
 
-        // Speed a zero para não haver transições inoportunas
-        if (hasSpeedParam)  anim.SetFloat("Speed", 0f);
+        // >>> chamar o ecrã de DERROTA <<<
+        if (deathManager == null)
+            deathManager = FindObjectOfType<DeathManager>();
+        deathManager?.ShowDeathScreen();
     }
 
     // Chamado por Animation Event no fim do clip de morte (opcional)

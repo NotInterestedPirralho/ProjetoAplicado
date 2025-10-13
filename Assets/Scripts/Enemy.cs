@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 [RequireComponent(typeof(Animator))]
 public class Enemy : MonoBehaviour
@@ -12,13 +13,11 @@ public class Enemy : MonoBehaviour
     [Tooltip("Se TRUE, o inimigo causa dano ao Player quando encosta.")]
     public bool causarDanoPorContacto = true;
 
-    EnemyHealthUI barraVida;
-    Animator anim;
-    bool isDead;
-
-    // anti-spam (não dar múltiplos hits no mesmo frame de contacto)
-    [SerializeField] float hitStun = 0.05f;
-    float lastHitTime = -999f;
+    private EnemyHealthUI barraVida;
+    private Animator anim;
+    private bool isDead;
+    private float lastHitTime = -999f;
+    [SerializeField] private float hitStun = 0.05f;
 
     void Start()
     {
@@ -33,23 +32,28 @@ public class Enemy : MonoBehaviour
     public void TakeDamage(int amount)
     {
         if (isDead) return;
-
         if (Time.time - lastHitTime < hitStun) return;
         lastHitTime = Time.time;
 
         health = Mathf.Max(0, health - amount);
+
         if (health <= 0)
         {
             Die();
             return;
         }
 
-        // Toca "Hit" se existir
+        // toca animação "Hit" se existir
         if (anim)
         {
             foreach (var p in anim.parameters)
+            {
                 if (p.type == AnimatorControllerParameterType.Trigger && p.name == "Hit")
-                { anim.SetTrigger("Hit"); break; }
+                {
+                    anim.SetTrigger("Hit");
+                    break;
+                }
+            }
         }
     }
 
@@ -82,18 +86,32 @@ public class Enemy : MonoBehaviour
 
         if (barraVida) barraVida.InimigoMorreu();
 
-        // desligar AI & física imediatamente
+        // desliga AI & física
         var ai = GetComponent<OrcController2D>();
         if (ai) ai.enabled = false;
 
         var rb = GetComponent<Rigidbody2D>();
         if (rb) rb.simulated = false;
 
-        // avisa o spawner para preparar o próximo
+        // chama o ecrã de VITÓRIA
+        var dm = FindObjectOfType<DeathManager>();
+        dm?.ShowWinScreen();
+
+        // notifica spawner (se existir)
         EnemySpawner.Instance?.OnEnemyDied();
 
-        // desaparece já
-        Destroy(gameObject);
+        // destrói ligeiramente depois, em tempo real (jogo pausado)
+        StartCoroutine(DestroyAfterRealtime(0.1f));
     }
 
+    IEnumerator DestroyAfterRealtime(float delay)
+    {
+        float elapsed = 0f;
+        while (elapsed < delay)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            yield return null;
+        }
+        Destroy(gameObject);
+    }
 }
