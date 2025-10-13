@@ -216,6 +216,37 @@ BoxCollider2D:
   m_CorrespondingSourceObject: {fileID: 6419377384429139413, guid: de8cfb4cfb7d4ec42aa9bd016840f298, type: 3}
   m_PrefabInstance: {fileID: 558417648}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &140235272
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 140235273}
+  m_Layer: 0
+  m_Name: AttackPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &140235273
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 140235272}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.35, y: 0.05, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2117708873}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!61 &153365398 stripped
 BoxCollider2D:
   m_CorrespondingSourceObject: {fileID: 3157515960126435542, guid: de8cfb4cfb7d4ec42aa9bd016840f298, type: 3}
@@ -3737,6 +3768,37 @@ BoxCollider2D:
   m_CorrespondingSourceObject: {fileID: 437374482715903832, guid: de8cfb4cfb7d4ec42aa9bd016840f298, type: 3}
   m_PrefabInstance: {fileID: 558417648}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &840086823
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 840086824}
+  m_Layer: 0
+  m_Name: FrenteCheck
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &840086824
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 840086823}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.3, y: -0.1, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2117708873}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!61 &852841039 stripped
 BoxCollider2D:
   m_CorrespondingSourceObject: {fileID: 7308500102091181462, guid: de8cfb4cfb7d4ec42aa9bd016840f298, type: 3}
@@ -5852,6 +5914,37 @@ BoxCollider2D:
   m_CorrespondingSourceObject: {fileID: 6121580550848746388, guid: de8cfb4cfb7d4ec42aa9bd016840f298, type: 3}
   m_PrefabInstance: {fileID: 2049346410}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1525064382
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1525064383}
+  m_Layer: 0
+  m_Name: GroundCheck
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1525064383
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1525064382}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: -0.15, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2117708873}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!61 &1558244863 stripped
 BoxCollider2D:
   m_CorrespondingSourceObject: {fileID: 1574651126537461910, guid: de8cfb4cfb7d4ec42aa9bd016840f298, type: 3}
@@ -11590,6 +11683,7 @@ GameObject:
   - component: {fileID: 2117708874}
   - component: {fileID: 2117708875}
   - component: {fileID: 2117708876}
+  - component: {fileID: 2117708877}
   m_Layer: 0
   m_Name: Orc
   m_TagString: Enemy
@@ -11703,7 +11797,7 @@ Rigidbody2D:
   m_Mass: 1
   m_LinearDamping: 0
   m_AngularDamping: 0.05
-  m_GravityScale: 1
+  m_GravityScale: 3
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -11785,7 +11879,10 @@ Transform:
   m_LocalPosition: {x: -14.855, y: -21.634, z: 0}
   m_LocalScale: {x: 8.5, y: 8, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 1525064383}
+  - {fileID: 840086824}
+  - {fileID: 140235273}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
 --- !u!114 &2117708874
@@ -11837,6 +11934,33 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &2117708877
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2117708868}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37bbe3d8610ef91418e50ff3bbd2ee61, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::OrcController2D
+  velocidade: 2.5
+  forcaPulo: 7
+  alcanceVisao: 12
+  alcanceAtaque: 1.2
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 64
+  playerMask:
+    serializedVersion: 2
+    m_Bits: 1
+  groundCheck: {fileID: 1525064383}
+  frenteCheck: {fileID: 840086824}
+  attackPoint: {fileID: 140235273}
+  danoAtaque: 10
+  cooldownAtaque: 0.6
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
