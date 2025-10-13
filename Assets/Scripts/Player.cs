@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class Player : MonoBehaviour, IResettableHealth   // <- implementa a interface para Respawn opcional
+public class Player : MonoBehaviour, IResettableHealth   // implementa a interface para Respawn opcional
 {
     [Header("Vida")]
     public int vidaMaxima = 100;
@@ -9,7 +9,7 @@ public class Player : MonoBehaviour, IResettableHealth   // <- implementa a inte
     private bool defendendo;
 
     [Header("Refs")]
-    [SerializeField] private DeathManager deathManager;   // <- arrasta no Inspector (ou � encontrado no Start)
+    [SerializeField] private DeathManager deathManager;   // arrasta no Inspector (ou é encontrado no Start)
 
     void Start()
     {
@@ -41,19 +41,29 @@ public class Player : MonoBehaviour, IResettableHealth   // <- implementa a inte
     {
         Debug.Log("Player morreu!");
 
-        // Mostra a Death Screen e pausa o jogo
+        // Mostra a Death Screen (se houver)
         if (deathManager == null) deathManager = FindObjectOfType<DeathManager>();
         deathManager?.ShowDeathScreen();
 
-        // Desativa o jogador sem destruir
-        var rb2d = GetComponent<Rigidbody2D>();
-        if (rb2d) { rb2d.velocity = Vector2.zero; rb2d.angularVelocity = 0f; rb2d.simulated = false; }
+        // Tenta usar a animação de morte do controller
+        var controller = GetComponent<PlayerController2D>();
+        if (controller != null)
+        {
+            controller.Die();
+            // Não destruímos nem desativamos já; o Animator trata do fluxo.
+        }
+        else
+        {
+            // Fallback: desativar o jogador sem destruir
+            var rb2d = GetComponent<Rigidbody2D>();
+            if (rb2d) { rb2d.velocity = Vector2.zero; rb2d.angularVelocity = 0f; rb2d.simulated = false; }
 
-        var col = GetComponent<Collider2D>();
-        if (col) col.enabled = false;
+            var col = GetComponent<Collider2D>();
+            if (col) col.enabled = false;
 
-        var sr = GetComponent<SpriteRenderer>();
-        if (sr) sr.enabled = false;
+            var sr = GetComponent<SpriteRenderer>();
+            if (sr) sr.enabled = false;
+        }
     }
 
     // =====================
@@ -62,7 +72,9 @@ public class Player : MonoBehaviour, IResettableHealth   // <- implementa a inte
     public void ResetHealth()
     {
         vidaAtual = vidaMaxima;
+        defendendo = false;
 
+        // Reativar componentes caso tenham sido desativados no fallback
         var rb2d = GetComponent<Rigidbody2D>();
         if (rb2d) rb2d.simulated = true;
 
@@ -81,7 +93,7 @@ public class Player : MonoBehaviour, IResettableHealth   // <- implementa a inte
     public int GetVidaAtual() => vidaAtual;
 
     // =====================
-    // Colis�o com inimigos
+    // Colisão com inimigos
     // =====================
     private void OnCollisionEnter2D(Collision2D collision)
     {
