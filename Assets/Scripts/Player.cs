@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class Player : MonoBehaviour
+public class Player : MonoBehaviour, IResettableHealth   // implementa a interface para Respawn opcional
 {
     [Header("Vida")]
     public int vidaMaxima = 100;
@@ -8,33 +8,13 @@ public class Player : MonoBehaviour
 
     private bool defendendo;
 
-    // ---- Animator / params ----
-    Animator anim;
-    int hashHit;        // Trigger "Hit"
-    int hashIsDead;     // Bool "IsDead" (opcional)
-    bool hasHit, hasIsDead;
-
-    // pequeno “cooldown” para não spammar o Hit
-    float hitCooldown = 0.15f;
-    float lastHitTime = -999f;
+    [Header("Refs")]
+    [SerializeField] private DeathManager deathManager;   // arrasta no Inspector (ou é encontrado no Start)
 
     void Start()
     {
         vidaAtual = vidaMaxima;
-
-        anim = GetComponent<Animator>();
-        if (anim)
-        {
-            hashHit    = Animator.StringToHash("Hit");
-            hashIsDead = Animator.StringToHash("IsDead");
-
-            // detetar de forma segura se os parâmetros existem no controller
-            foreach (var p in anim.parameters)
-            {
-                if (p.type == AnimatorControllerParameterType.Trigger && p.nameHash == hashHit) hasHit = true;
-                if (p.type == AnimatorControllerParameterType.Bool    && p.nameHash == hashIsDead) hasIsDead = true;
-            }
-        }
+        if (deathManager == null) deathManager = FindObjectOfType<DeathManager>(); // fallback
     }
 
     // =====================
@@ -46,13 +26,6 @@ public class Player : MonoBehaviour
         {
             Debug.Log("Defendeu o ataque!");
             return;
-        }
-
-        // Dispara a animação de hit (se existir) com um pequeno cooldown
-        if (hasHit && Time.time - lastHitTime >= hitCooldown)
-        {
-            anim.SetTrigger(hashHit);
-            lastHitTime = Time.time;
         }
 
         vidaAtual -= dano;
@@ -68,32 +41,56 @@ public class Player : MonoBehaviour
     {
         Debug.Log("Player morreu!");
 
-        // informa o Animator que está morto (se existir o parâmetro)
-        if (hasIsDead) anim.SetBool(hashIsDead, true);
+        // Mostra a Death Screen (se houver)
+        if (deathManager == null) deathManager = FindObjectOfType<DeathManager>();
+        deathManager?.ShowDeathScreen();
 
-        // chama o controlador para tocar a animação de morte
+        // Tenta usar a animação de morte do controller
         var controller = GetComponent<PlayerController2D>();
         if (controller != null)
+        {
             controller.Die();
+            // Não destruímos nem desativamos já; o Animator trata do fluxo.
+        }
+        else
+        {
+            // Fallback: desativar o jogador sem destruir
+            var rb2d = GetComponent<Rigidbody2D>();
+            if (rb2d) { rb2d.velocity = Vector2.zero; rb2d.angularVelocity = 0f; rb2d.simulated = false; }
+
+            var col = GetComponent<Collider2D>();
+            if (col) col.enabled = false;
+
+            var sr = GetComponent<SpriteRenderer>();
+            if (sr) sr.enabled = false;
+        }
+    }
+
+    // =====================
+    // Respawn support (se usares DeathManager.Respawn)
+    // =====================
+    public void ResetHealth()
+    {
+        vidaAtual = vidaMaxima;
+        defendendo = false;
+
+        // Reativar componentes caso tenham sido desativados no fallback
+        var rb2d = GetComponent<Rigidbody2D>();
+        if (rb2d) rb2d.simulated = true;
+
+        var col = GetComponent<Collider2D>();
+        if (col) col.enabled = true;
+
+        var sr = GetComponent<SpriteRenderer>();
+        if (sr) sr.enabled = true;
     }
 
     // =====================
     // Controle de estados
     // =====================
-    public void SetDefendendo(bool estado)
-    {
-        defendendo = estado;
-    }
-
-    public bool EstaDefendendo()
-    {
-        return defendendo;
-    }
-
-    public int GetVidaAtual()
-    {
-        return vidaAtual;
-    }
+    public void SetDefendendo(bool estado) => defendendo = estado;
+    public bool EstaDefendendo() => defendendo;
+    public int GetVidaAtual() => vidaAtual;
 
     // =====================
     // Colisão com inimigos

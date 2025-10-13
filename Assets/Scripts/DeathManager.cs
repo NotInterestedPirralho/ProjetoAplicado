@@ -7,7 +7,7 @@ public class DeathManager : MonoBehaviour
     [SerializeField] private GameObject deathPanel;
     [SerializeField] private GameObject winPanel;          // <- NOVO: painel de vitória
 
-    [Header("Referï¿½ncias")]
+    [Header("Referências")]
     [SerializeField] private Transform player;
     [SerializeField] private Transform bot;
 
@@ -17,7 +17,7 @@ public class DeathManager : MonoBehaviour
     private int enemiesVivos = 0;                          // <- NOVO
 
     [Header("Comportamento")]
-    [Tooltip("Se este objeto estiver marcado como DontDestroyOnLoad, destrï¿½i-o ao entrar no MainMenu.")]
+    [Tooltip("Se este objeto estiver marcado como DontDestroyOnLoad, destrói-o ao entrar no MainMenu.")]
     [SerializeField] private bool destroyOnMenu = true;
 
     // spawns iniciais
@@ -75,17 +75,12 @@ public class DeathManager : MonoBehaviour
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        // Sempre que muda de cena, garante que o jogo nï¿½o fica ï¿½pausadoï¿½
+        // Sempre que muda de cena, garante que o jogo não fica “pausado”
         Time.timeScale = 1f;
 
-<<<<<<< HEAD
         // E que não há overlays activos
         if (deathPanel) deathPanel.SetActive(false);
         if (winPanel) winPanel.SetActive(false);         // <- NOVO
-=======
-        // E que nï¿½o hï¿½ overlay a bloquear cliques
-        if (deathPanel != null) deathPanel.SetActive(false);
->>>>>>> 203c70309763bb3b829e4d07c544c0ad178a881a
 
         // Se este manager for persistente, remove-o ao entrar no menu principal
         if (destroyOnMenu && scene.name == "MainMenu")
@@ -102,7 +97,6 @@ public class DeathManager : MonoBehaviour
         Time.timeScale = 0f; // pausa o jogo
     }
 
-<<<<<<< HEAD
     // === VITÓRIA ===
     private void OnEnemyDied()                              // <- NOVO
     {
@@ -131,9 +125,6 @@ public class DeathManager : MonoBehaviour
     }
 
     // Opção A: reiniciar a cena (reset total)
-=======
-    // Opï¿½ï¿½o A: reiniciar a cena (reset total)
->>>>>>> 203c70309763bb3b829e4d07c544c0ad178a881a
     public void RestartLevel()
     {
         Time.timeScale = 1f;
@@ -141,7 +132,7 @@ public class DeathManager : MonoBehaviour
         SceneManager.LoadScene(s.buildIndex, LoadSceneMode.Single);
     }
 
-    // Opï¿½ï¿½o B: respawn sem recarregar a cena
+    // Opção B: respawn sem recarregar a cena
     public void Respawn()
     {
         Time.timeScale = 1f;
@@ -150,9 +141,9 @@ public class DeathManager : MonoBehaviour
         if (player != null)
         {
             var rb2d = player.GetComponent<Rigidbody2D>();
-            if (rb2d) { rb2d.linearVelocity = Vector2.zero; rb2d.angularVelocity = 0f; }
+            if (rb2d) { rb2d.velocity = Vector2.zero; rb2d.angularVelocity = 0f; }
             var rb3d = player.GetComponent<Rigidbody>();
-            if (rb3d) { rb3d.linearVelocity = Vector3.zero; rb3d.angularVelocity = Vector3.zero; }
+            if (rb3d) { rb3d.velocity = Vector3.zero; rb3d.angularVelocity = Vector3.zero; }
 
             player.SetPositionAndRotation(playerStartPos, playerStartRot);
 
@@ -164,9 +155,9 @@ public class DeathManager : MonoBehaviour
         if (bot != null)
         {
             var rb2d = bot.GetComponent<Rigidbody2D>();
-            if (rb2d) { rb2d.linearVelocity = Vector2.zero; rb2d.angularVelocity = 0f; }
+            if (rb2d) { rb2d.velocity = Vector2.zero; rb2d.angularVelocity = 0f; }
             var rb3d = bot.GetComponent<Rigidbody>();
-            if (rb3d) { rb3d.linearVelocity = Vector3.zero; rb3d.angularVelocity = Vector3.zero; }
+            if (rb3d) { rb3d.velocity = Vector3.zero; rb3d.angularVelocity = Vector3.zero; }
 
             bot.SetPositionAndRotation(botStartPos, botStartRot);
 
@@ -183,10 +174,6 @@ public class DeathManager : MonoBehaviour
 
     public void BackToMenu()
     {
-<<<<<<< HEAD
-=======
-        // repï¿½e imediatamente antes de trocar de cena
->>>>>>> 203c70309763bb3b829e4d07c544c0ad178a881a
         Time.timeScale = 1f;
         if (deathPanel) deathPanel.SetActive(false);
         if (winPanel) winPanel.SetActive(false);         // <- NOVO
