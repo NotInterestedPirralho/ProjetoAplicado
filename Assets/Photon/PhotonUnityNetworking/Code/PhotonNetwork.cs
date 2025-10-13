@@ -36,12 +36,20 @@ namespace Photon.Pun
         public object[] data;
         public byte @group;
         public Quaternion rotation;
+<<<<<<< HEAD
         public Vector2 position;
+=======
+        public Vector3 position;
+>>>>>>> main
         public string prefabName;
         public Player creator;
         public int timestamp;
 
+<<<<<<< HEAD
         public InstantiateParameters(string prefabName, Vector2 position, Quaternion rotation, byte @group, object[] data, byte objLevelPrefix, int[] viewIDs, Player creator, int timestamp)
+=======
+        public InstantiateParameters(string prefabName, Vector3 position, Quaternion rotation, byte @group, object[] data, byte objLevelPrefix, int[] viewIDs, Player creator, int timestamp)
+>>>>>>> main
         {
             this.prefabName = prefabName;
             this.position = position;
@@ -410,7 +418,11 @@ namespace Photon.Pun
         public static bool EnableCloseConnection = false;
 
         /// <summary>
+<<<<<<< HEAD
         /// The minimum difference that a Vector2 or Vector2(e.g. a transforms rotation) needs to change before we send it via a PhotonView's OnSerialize/ObservingComponent.
+=======
+        /// The minimum difference that a Vector2 or Vector3(e.g. a transforms rotation) needs to change before we send it via a PhotonView's OnSerialize/ObservingComponent.
+>>>>>>> main
         /// </summary>
         /// <remarks>
         /// Note that this is the sqrMagnitude. E.g. to send only after a 0.01 change on the Y-axix, we use 0.01f*0.01f=0.0001f. As a remedy against float inaccuracy we use 0.000099f instead of 0.0001f.
@@ -2288,7 +2300,11 @@ namespace Photon.Pun
         ///
         /// The eventContent is optional. If set, eventContent must be a "serializable type", something that
         /// the client can turn into a byte[] basically. Most basic types and arrays of them are supported, including
+<<<<<<< HEAD
         /// Unity's Vector2, Vector2, Quaternion. Transforms are not supported.
+=======
+        /// Unity's Vector2, Vector3, Quaternion. Transforms are not supported.
+>>>>>>> main
         ///
         /// You can turn a class into a "serializable type" by following the example in CustomTypes.cs.
         ///
@@ -2469,7 +2485,11 @@ namespace Photon.Pun
         }
 
 
+<<<<<<< HEAD
         public static GameObject Instantiate(string prefabName, Vector2 position, Quaternion rotation, byte group = 0, object[] data = null)
+=======
+        public static GameObject Instantiate(string prefabName, Vector3 position, Quaternion rotation, byte group = 0, object[] data = null)
+>>>>>>> main
         {
             if (CurrentRoom == null)
             {
@@ -2482,12 +2502,20 @@ namespace Photon.Pun
         }
 
         [Obsolete("Renamed. Use InstantiateRoomObject instead")]
+<<<<<<< HEAD
         public static GameObject InstantiateSceneObject(string prefabName, Vector2 position, Quaternion rotation, byte group = 0, object[] data = null)
+=======
+        public static GameObject InstantiateSceneObject(string prefabName, Vector3 position, Quaternion rotation, byte group = 0, object[] data = null)
+>>>>>>> main
         {
             return InstantiateRoomObject(prefabName, position, rotation, group, data);
         }
 
+<<<<<<< HEAD
         public static GameObject InstantiateRoomObject(string prefabName, Vector2 position, Quaternion rotation, byte group = 0, object[] data = null)
+=======
+        public static GameObject InstantiateRoomObject(string prefabName, Vector3 position, Quaternion rotation, byte group = 0, object[] data = null)
+>>>>>>> main
         {
             if (CurrentRoom == null)
             {
@@ -2512,6 +2540,7 @@ namespace Photon.Pun
             int serverTime = (int)networkEvent[keyByteSix];
             int instantiationId = (int)networkEvent[keyByteSeven];
 
+<<<<<<< HEAD
             Vector2 position;
             if (networkEvent.ContainsKey(keyByteOne))
             {
@@ -2520,6 +2549,16 @@ namespace Photon.Pun
             else
             {
                 position = Vector2.zero;
+=======
+            Vector3 position;
+            if (networkEvent.ContainsKey(keyByteOne))
+            {
+                position = (Vector3)networkEvent[keyByteOne];
+            }
+            else
+            {
+                position = Vector3.zero;
+>>>>>>> main
             }
 
             Quaternion rotation = Quaternion.identity;
@@ -2682,7 +2721,11 @@ namespace Photon.Pun
 
             SendInstantiateEvHashtable[keyByteZero] = parameters.prefabName;
 
+<<<<<<< HEAD
             if (parameters.position != Vector2.zero)
+=======
+            if (parameters.position != Vector3.zero)
+>>>>>>> main
             {
                 SendInstantiateEvHashtable[keyByteOne] = parameters.position;
             }

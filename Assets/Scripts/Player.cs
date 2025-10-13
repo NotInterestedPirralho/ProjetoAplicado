@@ -6,11 +6,38 @@ public class Player : MonoBehaviour
     public int vidaMaxima = 100;
     private int vidaAtual;
 
+    [Tooltip("Se TRUE, o player leva dano ao encostar no inimigo. Normalmente deixa FALSE.")]
+    public bool danoPorToque = false;
+
     private bool defendendo;
+
+    // ---- Animator / params ----
+    Animator anim;
+    int hashHit;        // Trigger "Hit"
+    int hashIsDead;     // Bool "IsDead" (opcional)
+    bool hasHit, hasIsDead;
+
+    // pequeno cooldown para não spammar o Hit
+    float hitCooldown = 0.15f;
+    float lastHitTime = -999f;
 
     void Start()
     {
         vidaAtual = vidaMaxima;
+
+        anim = GetComponent<Animator>();
+        if (anim)
+        {
+            hashHit = Animator.StringToHash("Hit");
+            hashIsDead = Animator.StringToHash("IsDead");
+
+            // detetar de forma segura se os parâmetros existem no controller
+            foreach (var p in anim.parameters)
+            {
+                if (p.type == AnimatorControllerParameterType.Trigger && p.nameHash == hashHit) hasHit = true;
+                if (p.type == AnimatorControllerParameterType.Bool && p.nameHash == hashIsDead) hasIsDead = true;
+            }
+        }
     }
 
     // =====================
@@ -22,6 +49,13 @@ public class Player : MonoBehaviour
         {
             Debug.Log("Defendeu o ataque!");
             return;
+        }
+
+        // Dispara a animação de hit (se existir) com um pequeno cooldown
+        if (hasHit && Time.time - lastHitTime >= hitCooldown)
+        {
+            anim.SetTrigger(hashHit);
+            lastHitTime = Time.time;
         }
 
         vidaAtual -= dano;
@@ -36,35 +70,30 @@ public class Player : MonoBehaviour
     private void Morrer()
     {
         Debug.Log("Player morreu!");
-        Destroy(gameObject);
+
+        // informa o Animator que está morto (se existir o parâmetro)
+        if (hasIsDead) anim.SetBool(hashIsDead, true);
+
+        // chama o controlador para tocar a animação de morte
+        var controller = GetComponent<PlayerController2D>();
+        if (controller != null)
+            controller.Die();
     }
 
     // =====================
     // Controle de estados
     // =====================
-    public void SetDefendendo(bool estado)
-    {
-        defendendo = estado;
-    }
-
-    public bool EstaDefendendo()
-    {
-        return defendendo;
-    }
-
-    public int GetVidaAtual()
-    {
-        return vidaAtual;
-    }
+    public void SetDefendendo(bool estado) => defendendo = estado;
+    public bool EstaDefendendo() => defendendo;
+    public int GetVidaAtual() => vidaAtual;
 
     // =====================
-    // Colis�o com inimigos
+    // Colisão com inimigos (opcional, deixa FALSE para evitar dano duplo)
     // =====================
     private void OnCollisionEnter2D(Collision2D collision)
     {
+        if (!danoPorToque) return;
         if (collision.gameObject.CompareTag("Enemy"))
-        {
-            TomarDano(10); // perde 10 de vida ao encostar no inimigo
-        }
+            TomarDano(5);
     }
 }
