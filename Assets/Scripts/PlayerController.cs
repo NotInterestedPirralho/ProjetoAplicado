@@ -31,7 +31,7 @@ public class PlayerController2D : MonoBehaviour
     private bool facingRight = true;
 
     // Animação / estados
-    bool hasSpeedParam, hasAttackParam, hasDefendParam, hasDeathParam, hasIsDeadParam;
+    bool hasSpeedParam, hasAttackParam, hasDefendParam, hasDeathParam, hasIsDeadParam, hasHitParam;
     bool isDead;
 
     void Start()
@@ -48,6 +48,7 @@ public class PlayerController2D : MonoBehaviour
         hasDefendParam  = HasParam("Defend", AnimatorControllerParameterType.Bool);
         hasDeathParam   = HasParam("Death",  AnimatorControllerParameterType.Trigger);
         hasIsDeadParam  = HasParam("IsDead", AnimatorControllerParameterType.Bool);
+        hasHitParam     = HasParam("Hit",    AnimatorControllerParameterType.Trigger);
     }
 
     void Update()
@@ -176,6 +177,15 @@ public class PlayerController2D : MonoBehaviour
     public bool EstaAtacando() => atacando;
 
     // =====================
+    // NOVO: Hit
+    // =====================
+    public void Hit()
+    {
+        if (isDead) return;
+        if (hasHitParam) anim.SetTrigger("Hit");
+    }
+
+    // =====================
     // Morte
     // =====================
     public void Die()
@@ -202,9 +212,6 @@ public class PlayerController2D : MonoBehaviour
     // Chamado por Animation Event no fim do clip de morte (opcional)
     void OnDeathAnimationEnd()
     {
-        // Aqui não desligamos o GameObject (para não “desaparecer”).
-        // Coloca aqui chamada para UI / Game Over, etc.
-        // Ex.: FindFirstObjectByType<GameManager>()?.ShowDeathScreen();
         Debug.Log("Morte concluída – chamar UI/respawn aqui.");
     }
 
