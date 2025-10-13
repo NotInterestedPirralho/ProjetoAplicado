@@ -1,7 +1,4 @@
 fileFormatVersion: 2
-<<<<<<< HEAD
-guid: 88e11b3353de7e94d84b1ec5adbdd15e
-=======
 guid: 88e11b3353de7e94d84b1ec5adbdd15e
 labels:
 - ExitGames
@@ -20,4 +17,3 @@ AssetOrigin:
   packageVersion: 2.51
   assetPath: Assets/Photon/PhotonUnityNetworking/Code/PhotonNetwork.cs
   uploadId: 776507
->>>>>>> main
