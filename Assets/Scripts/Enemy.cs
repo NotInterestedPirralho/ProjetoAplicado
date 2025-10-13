@@ -46,7 +46,7 @@ public class Enemy : MonoBehaviour
 
         // ?? avisa o DeathManager
         Died?.Invoke();
-
+        
         // opcional: destruir o inimigo após pequeno atraso
         Destroy(gameObject, 0.1f);
     }

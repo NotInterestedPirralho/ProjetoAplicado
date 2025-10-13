@@ -56,7 +56,7 @@ public class Player : MonoBehaviour, IResettableHealth   // implementa a interfa
         {
             // Fallback: desativar o jogador sem destruir
             var rb2d = GetComponent<Rigidbody2D>();
-            if (rb2d) { rb2d.velocity = Vector2.zero; rb2d.angularVelocity = 0f; rb2d.simulated = false; }
+            if (rb2d) { rb2d.linearVelocity = Vector2.zero; rb2d.angularVelocity = 0f; rb2d.simulated = false; }
 
             var col = GetComponent<Collider2D>();
             if (col) col.enabled = false;

@@ -5,19 +5,19 @@ public class DeathManager : MonoBehaviour
 {
     [Header("UI")]
     [SerializeField] private GameObject deathPanel;
-    [SerializeField] private GameObject winPanel;          // <- NOVO: painel de vitória
+    [SerializeField] private GameObject winPanel;          // <- NOVO: painel de vitï¿½ria
 
-    [Header("Referências")]
+    [Header("Referï¿½ncias")]
     [SerializeField] private Transform player;
     [SerializeField] private Transform bot;
 
-    [Header("Inimigos / Vitória")]
-    [Tooltip("Arrasta aqui todos os inimigos da cena (componentes Enemy). A vitória acontece quando todos morrerem.")]
+    [Header("Inimigos / Vitï¿½ria")]
+    [Tooltip("Arrasta aqui todos os inimigos da cena (componentes Enemy). A vitï¿½ria acontece quando todos morrerem.")]
     [SerializeField] private Enemy[] enemies;              // <- NOVO
     private int enemiesVivos = 0;                          // <- NOVO
 
     [Header("Comportamento")]
-    [Tooltip("Se este objeto estiver marcado como DontDestroyOnLoad, destrói-o ao entrar no MainMenu.")]
+    [Tooltip("Se este objeto estiver marcado como DontDestroyOnLoad, destrï¿½i-o ao entrar no MainMenu.")]
     [SerializeField] private bool destroyOnMenu = true;
 
     // spawns iniciais
@@ -62,7 +62,7 @@ public class DeathManager : MonoBehaviour
     {
         SceneManager.sceneLoaded -= OnSceneLoaded;
 
-        // remove subscrições
+        // remove subscriï¿½ï¿½es
         if (enemies != null)
         {
             foreach (var e in enemies)
@@ -75,10 +75,10 @@ public class DeathManager : MonoBehaviour
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        // Sempre que muda de cena, garante que o jogo não fica “pausado”
+        // Sempre que muda de cena, garante que o jogo nï¿½o fica ï¿½pausadoï¿½
         Time.timeScale = 1f;
 
-        // E que não há overlays activos
+        // E que nï¿½o hï¿½ overlays activos
         if (deathPanel) deathPanel.SetActive(false);
         if (winPanel) winPanel.SetActive(false);         // <- NOVO
 
@@ -92,12 +92,12 @@ public class DeathManager : MonoBehaviour
     // chamado quando o player morre
     public void ShowDeathScreen()
     {
-        if (winPanel) winPanel.SetActive(false);         // <- NOVO: garante que só uma está visível
+        if (winPanel) winPanel.SetActive(false);         // <- NOVO: garante que sï¿½ uma estï¿½ visï¿½vel
         if (deathPanel) deathPanel.SetActive(true);
         Time.timeScale = 0f; // pausa o jogo
     }
 
-    // === VITÓRIA ===
+    // === VITï¿½RIA ===
     private void OnEnemyDied()                              // <- NOVO
     {
         enemiesVivos--;
@@ -109,10 +109,10 @@ public class DeathManager : MonoBehaviour
     {
         if (deathPanel) deathPanel.SetActive(false);
         if (winPanel) winPanel.SetActive(true);
-        Time.timeScale = 0f; // pausa para mostrar UI de vitória
+        Time.timeScale = 0f; // pausa para mostrar UI de vitï¿½ria
     }
 
-    // Botão “Next Level” (se tiveres cenas em Build Settings)
+    // Botï¿½o ï¿½Next Levelï¿½ (se tiveres cenas em Build Settings)
     public void NextLevel()                                 // <- OPCIONAL
     {
         Time.timeScale = 1f;
@@ -124,7 +124,7 @@ public class DeathManager : MonoBehaviour
             SceneManager.LoadScene("MainMenu", LoadSceneMode.Single); // fallback
     }
 
-    // Opção A: reiniciar a cena (reset total)
+    // Opï¿½ï¿½o A: reiniciar a cena (reset total)
     public void RestartLevel()
     {
         Time.timeScale = 1f;
@@ -132,7 +132,7 @@ public class DeathManager : MonoBehaviour
         SceneManager.LoadScene(s.buildIndex, LoadSceneMode.Single);
     }
 
-    // Opção B: respawn sem recarregar a cena
+    // Opï¿½ï¿½o B: respawn sem recarregar a cena
     public void Respawn()
     {
         Time.timeScale = 1f;
@@ -141,9 +141,9 @@ public class DeathManager : MonoBehaviour
         if (player != null)
         {
             var rb2d = player.GetComponent<Rigidbody2D>();
-            if (rb2d) { rb2d.velocity = Vector2.zero; rb2d.angularVelocity = 0f; }
+            if (rb2d) { rb2d.linearVelocity = Vector2.zero; rb2d.angularVelocity = 0f; }
             var rb3d = player.GetComponent<Rigidbody>();
-            if (rb3d) { rb3d.velocity = Vector3.zero; rb3d.angularVelocity = Vector3.zero; }
+            if (rb3d) { rb3d.linearVelocity = Vector3.zero; rb3d.angularVelocity = Vector3.zero; }
 
             player.SetPositionAndRotation(playerStartPos, playerStartRot);
 
@@ -155,9 +155,9 @@ public class DeathManager : MonoBehaviour
         if (bot != null)
         {
             var rb2d = bot.GetComponent<Rigidbody2D>();
-            if (rb2d) { rb2d.velocity = Vector2.zero; rb2d.angularVelocity = 0f; }
+            if (rb2d) { rb2d.linearVelocity = Vector2.zero; rb2d.angularVelocity = 0f; }
             var rb3d = bot.GetComponent<Rigidbody>();
-            if (rb3d) { rb3d.velocity = Vector3.zero; rb3d.angularVelocity = Vector3.zero; }
+            if (rb3d) { rb3d.linearVelocity = Vector3.zero; rb3d.angularVelocity = Vector3.zero; }
 
             bot.SetPositionAndRotation(botStartPos, botStartRot);
 
