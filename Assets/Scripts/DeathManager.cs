@@ -6,12 +6,12 @@ public class DeathManager : MonoBehaviour
     [Header("UI")]
     [SerializeField] private GameObject deathPanel;
 
-    [Header("Referências")]
+    [Header("Referï¿½ncias")]
     [SerializeField] private Transform player;
     [SerializeField] private Transform bot;
 
     [Header("Comportamento")]
-    [Tooltip("Se este objeto estiver marcado como DontDestroyOnLoad, destrói-o ao entrar no MainMenu.")]
+    [Tooltip("Se este objeto estiver marcado como DontDestroyOnLoad, destrï¿½i-o ao entrar no MainMenu.")]
     [SerializeField] private bool destroyOnMenu = true;
 
     // spawns iniciais
@@ -46,10 +46,10 @@ public class DeathManager : MonoBehaviour
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        // Sempre que muda de cena, garante que o jogo não fica “pausado”
+        // Sempre que muda de cena, garante que o jogo nï¿½o fica ï¿½pausadoï¿½
         Time.timeScale = 1f;
 
-        // E que não há overlay a bloquear cliques
+        // E que nï¿½o hï¿½ overlay a bloquear cliques
         if (deathPanel != null) deathPanel.SetActive(false);
 
         // Se este manager for persistente, remove-o ao entrar no menu principal
@@ -66,7 +66,7 @@ public class DeathManager : MonoBehaviour
         Time.timeScale = 0f; // pausa o jogo
     }
 
-    // Opção A: reiniciar a cena (reset total)
+    // Opï¿½ï¿½o A: reiniciar a cena (reset total)
     public void RestartLevel()
     {
         Time.timeScale = 1f;
@@ -74,7 +74,7 @@ public class DeathManager : MonoBehaviour
         SceneManager.LoadScene(s.buildIndex, LoadSceneMode.Single);
     }
 
-    // Opção B: respawn sem recarregar a cena
+    // Opï¿½ï¿½o B: respawn sem recarregar a cena
     public void Respawn()
     {
         Time.timeScale = 1f;
@@ -83,9 +83,9 @@ public class DeathManager : MonoBehaviour
         if (player != null)
         {
             var rb2d = player.GetComponent<Rigidbody2D>();
-            if (rb2d) { rb2d.velocity = Vector2.zero; rb2d.angularVelocity = 0f; }
+            if (rb2d) { rb2d.linearVelocity = Vector2.zero; rb2d.angularVelocity = 0f; }
             var rb3d = player.GetComponent<Rigidbody>();
-            if (rb3d) { rb3d.velocity = Vector3.zero; rb3d.angularVelocity = Vector3.zero; }
+            if (rb3d) { rb3d.linearVelocity = Vector3.zero; rb3d.angularVelocity = Vector3.zero; }
 
             player.SetPositionAndRotation(playerStartPos, playerStartRot);
 
@@ -97,9 +97,9 @@ public class DeathManager : MonoBehaviour
         if (bot != null)
         {
             var rb2d = bot.GetComponent<Rigidbody2D>();
-            if (rb2d) { rb2d.velocity = Vector2.zero; rb2d.angularVelocity = 0f; }
+            if (rb2d) { rb2d.linearVelocity = Vector2.zero; rb2d.angularVelocity = 0f; }
             var rb3d = bot.GetComponent<Rigidbody>();
-            if (rb3d) { rb3d.velocity = Vector3.zero; rb3d.angularVelocity = Vector3.zero; }
+            if (rb3d) { rb3d.linearVelocity = Vector3.zero; rb3d.angularVelocity = Vector3.zero; }
 
             bot.SetPositionAndRotation(botStartPos, botStartRot);
 
@@ -115,7 +115,7 @@ public class DeathManager : MonoBehaviour
 
     public void BackToMenu()
     {
-        // repõe imediatamente antes de trocar de cena
+        // repï¿½e imediatamente antes de trocar de cena
         Time.timeScale = 1f;
         if (deathPanel != null) deathPanel.SetActive(false);
 
