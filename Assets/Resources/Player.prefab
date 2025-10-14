@@ -208,6 +208,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Player
   vidaMaxima: 100
+  danoPorToque: 0
 --- !u!114 &5560081084164796294
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -226,6 +227,7 @@ MonoBehaviour:
   alcanceAtaque: 1
   danoAtaque: 10
   maxPulos: 2
+  deathManager: {fileID: 0}
 --- !u!114 &2157094067131585010
 MonoBehaviour:
   m_ObjectHideFlags: 0
