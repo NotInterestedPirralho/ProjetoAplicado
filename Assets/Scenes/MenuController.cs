@@ -3,18 +3,29 @@ using UnityEngine.SceneManagement;
 
 public class MenuController : MonoBehaviour
 {
-    [Header("Painéis do Menu")]
-    public GameObject mainPanel;
-    public GameObject settingsPanel;
+    [Header("Painéis")]
+    [SerializeField] private GameObject mainMenuPanel;      // arrasta aqui MainMenuPanel
+    [SerializeField] private GameObject levelSelectPanel;   // arrasta aqui LevelSelectPanel
 
-    // Função chamada ao clicar no botão "Jogar"
-    public void StartGame()
+    // -------- MENU PRINCIPAL --------
+
+    public void OnPlayPressed()
     {
-        SceneManager.LoadScene("MainScene");
+        mainMenuPanel.SetActive(false);
+        levelSelectPanel.SetActive(true);
     }
 
-    // Função chamada ao clicar no botão "Sair"
-    public void ExitGame()
+    public void OnMultiplayerPressed()
+    {
+        Debug.Log("Multiplayer ainda não implementado.");
+    }
+
+    public void OnSettingsPressed()
+    {
+        Debug.Log("Settings ainda não implementado.");
+    }
+
+    public void OnExitPressed()
     {
         Application.Quit();
 
@@ -23,17 +34,21 @@ public class MenuController : MonoBehaviour
 #endif
     }
 
-    // Abre o painel de definições
-    public void OpenSettings()
+    // -------- SELECT NÍVEL --------
+
+    public void OnReturnPressed()
     {
-        mainPanel.SetActive(false);
-        settingsPanel.SetActive(true);
+        levelSelectPanel.SetActive(false);
+        mainMenuPanel.SetActive(true);
     }
 
-    // Volta ao menu principal
-    public void BackToMenu()
+    public void OnLevel1Pressed()
     {
-        mainPanel.SetActive(true);
-        settingsPanel.SetActive(false);
+        SceneManager.LoadScene("MainScene");
+    }
+
+    public void OnLevel2Pressed()
+    {
+        SceneManager.LoadScene("SampleScene");
     }
 }

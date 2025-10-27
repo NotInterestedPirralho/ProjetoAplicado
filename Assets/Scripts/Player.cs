@@ -1,20 +1,43 @@
 using UnityEngine;
 
-public class Player : MonoBehaviour, IResettableHealth   // <- implementa a interface para Respawn opcional
+public class Player : MonoBehaviour
 {
     [Header("Vida")]
     public int vidaMaxima = 100;
     private int vidaAtual;
 
+    [Tooltip("Se TRUE, o player leva dano ao encostar no inimigo. Normalmente deixa FALSE.")]
+    public bool danoPorToque = false;
+
     private bool defendendo;
 
-    [Header("Refs")]
-    [SerializeField] private DeathManager deathManager;   // <- arrasta no Inspector (ou � encontrado no Start)
+    // ---- Animator / params ----
+    Animator anim;
+    int hashHit;        // Trigger "Hit"
+    int hashIsDead;     // Bool "IsDead" (opcional)
+    bool hasHit, hasIsDead;
+
+    // pequeno cooldown para não spammar o Hit
+    float hitCooldown = 0.15f;
+    float lastHitTime = -999f;
 
     void Start()
     {
         vidaAtual = vidaMaxima;
-        if (deathManager == null) deathManager = FindObjectOfType<DeathManager>(); // fallback
+
+        anim = GetComponent<Animator>();
+        if (anim)
+        {
+            hashHit = Animator.StringToHash("Hit");
+            hashIsDead = Animator.StringToHash("IsDead");
+
+            // detetar de forma segura se os parâmetros existem no controller
+            foreach (var p in anim.parameters)
+            {
+                if (p.type == AnimatorControllerParameterType.Trigger && p.nameHash == hashHit) hasHit = true;
+                if (p.type == AnimatorControllerParameterType.Bool && p.nameHash == hashIsDead) hasIsDead = true;
+            }
+        }
     }
 
     // =====================
@@ -26,6 +49,13 @@ public class Player : MonoBehaviour, IResettableHealth   // <- implementa a inte
         {
             Debug.Log("Defendeu o ataque!");
             return;
+        }
+
+        // Dispara a animação de hit (se existir) com um pequeno cooldown
+        if (hasHit && Time.time - lastHitTime >= hitCooldown)
+        {
+            anim.SetTrigger(hashHit);
+            lastHitTime = Time.time;
         }
 
         vidaAtual -= dano;
@@ -41,36 +71,13 @@ public class Player : MonoBehaviour, IResettableHealth   // <- implementa a inte
     {
         Debug.Log("Player morreu!");
 
-        // Mostra a Death Screen e pausa o jogo
-        if (deathManager == null) deathManager = FindObjectOfType<DeathManager>();
-        deathManager?.ShowDeathScreen();
+        // informa o Animator que está morto (se existir o parâmetro)
+        if (hasIsDead) anim.SetBool(hashIsDead, true);
 
-        // Desativa o jogador sem destruir
-        var rb2d = GetComponent<Rigidbody2D>();
-        if (rb2d) { rb2d.velocity = Vector2.zero; rb2d.angularVelocity = 0f; rb2d.simulated = false; }
-
-        var col = GetComponent<Collider2D>();
-        if (col) col.enabled = false;
-
-        var sr = GetComponent<SpriteRenderer>();
-        if (sr) sr.enabled = false;
-    }
-
-    // =====================
-    // Respawn support (se usares DeathManager.Respawn)
-    // =====================
-    public void ResetHealth()
-    {
-        vidaAtual = vidaMaxima;
-
-        var rb2d = GetComponent<Rigidbody2D>();
-        if (rb2d) rb2d.simulated = true;
-
-        var col = GetComponent<Collider2D>();
-        if (col) col.enabled = true;
-
-        var sr = GetComponent<SpriteRenderer>();
-        if (sr) sr.enabled = true;
+        // chama o controlador para tocar a animação de morte
+        var controller = GetComponent<PlayerController2D>();
+        if (controller != null)
+            controller.Die();
     }
 
     // =====================
@@ -81,13 +88,12 @@ public class Player : MonoBehaviour, IResettableHealth   // <- implementa a inte
     public int GetVidaAtual() => vidaAtual;
 
     // =====================
-    // Colis�o com inimigos
+    // Colisão com inimigos (opcional, deixa FALSE para evitar dano duplo)
     // =====================
     private void OnCollisionEnter2D(Collision2D collision)
     {
+        if (!danoPorToque) return;
         if (collision.gameObject.CompareTag("Enemy"))
-        {
-            TomarDano(10); // perde 10 de vida ao encostar no inimigo
-        }
+            TomarDano(5);
     }
 }

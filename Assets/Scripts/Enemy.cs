@@ -1,84 +1,131 @@
 using UnityEngine;
-using System; // necessário para o evento Action
 
+[RequireComponent(typeof(Animator))]
 public class Enemy : MonoBehaviour
 {
-    [Header("Atributos")]
+    [Header("Vida")]
     public int healthMaximo = 100;
-    public int health;
+    public int health = 100;
     public int dano = 10;
 
-    [Header("Referências")]
-    private EnemyHealthUI barraVida;
-<<<<<<< Updated upstream
-=======
+    [Header("Contacto")]
+    [Tooltip("Se TRUE, o inimigo causa dano ao Player quando encosta.")]
+    public bool causarDanoPorContacto = false; // deixa FALSE enquanto testas
 
-    // ?? Evento de morte — o DeathManager vai ouvir isto
-    public event Action Died;
->>>>>>> Stashed changes
+    private EnemyHealthUI barraVida;
+    private Animator anim;
+    private bool isDead;
+    private bool reportedDeath;
+    [SerializeField] private float hitStun = 0.05f;
+    private float lastHitTime = -999f;
+
+    // <-- Adicionámos isto
+    private DeathManager deathManager;
 
     void Start()
     {
-        health = healthMaximo;
+        anim = GetComponent<Animator>();
+        health = Mathf.Clamp(health, 0, healthMaximo);
 
-<<<<<<< Updated upstream
-        // tenta pegar o script da barra se estiver como child
-=======
-        // tenta obter o script da barra, se estiver como filho
->>>>>>> Stashed changes
         barraVida = GetComponentInChildren<EnemyHealthUI>();
-        if (barraVida != null)
-        {
-            barraVida.enemy = this;
-        }
+        if (barraVida) barraVida.enemy = this;
+
+        // vamos buscar o DeathManager da cena
+        deathManager = FindFirstObjectByType<DeathManager>();
+
+        if (EnemySpawner.Instance != null)
+            EnemySpawner.Instance.NotifySpawned();
     }
 
     public void TakeDamage(int amount)
     {
-<<<<<<< Updated upstream
-=======
-        if (health <= 0) return; // já está morto
+        if (isDead) return;
 
->>>>>>> Stashed changes
-        health -= amount;
+        if (Time.time - lastHitTime < hitStun) return;
+        lastHitTime = Time.time;
+
+        health = Mathf.Max(0, health - amount);
         if (health <= 0)
         {
             Die();
-<<<<<<< Updated upstream
+            return;
+        }
+
+        if (anim)
+        {
+            foreach (var p in anim.parameters)
+            {
+                if (p.type == AnimatorControllerParameterType.Trigger && p.name == "Hit")
+                {
+                    anim.SetTrigger("Hit");
+                    break;
+                }
+            }
         }
     }
 
-    private void Die()
+    private void OnCollisionEnter2D(Collision2D collision)
     {
-        // Notifica a barra que o inimigo morreu
-        if (barraVida != null)
+        if (!causarDanoPorContacto) return;
+        if (collision.gameObject.CompareTag("Player"))
         {
-            barraVida.InimigoMorreu();
+            var p = collision.gameObject.GetComponent<Player>();
+            if (p != null) p.TomarDano(dano);
         }
+    }
 
-        // mostra a win screen
-        var deathManager = FindObjectOfType<DeathManager>();
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        if (!causarDanoPorContacto) return;
+        if (other.CompareTag("Player"))
+        {
+            var p = other.GetComponent<Player>();
+            if (p != null) p.TomarDano(dano);
+        }
+    }
+
+    void Die()
+    {
+        if (isDead) return;
+        isDead = true;
+
+        if (barraVida) barraVida.InimigoMorreu();
+
+        // desliga IA para ele parar
+        var ai = GetComponent<OrcController2D>();
+        if (ai) ai.enabled = false;
+
+        // desliga física
+        var rb = GetComponent<Rigidbody2D>();
+        if (rb) rb.simulated = false;
+
+        // diz ao jogo que ganhaste
         if (deathManager != null)
         {
             deathManager.ShowWinScreen();
         }
-
-        // destrói o inimigo após alguns segundos (opcional)
-=======
+        else
+        {
+            Debug.LogWarning("DeathManager não encontrado, não consigo mostrar ecrã de vitória!");
         }
+
+        ReportDeathOnce();
+
+       
+        Destroy(gameObject);
     }
 
-    private void Die()
+    void OnDestroy()
     {
-        // notifica a barra de vida
-        if (barraVida != null)
-            barraVida.InimigoMorreu();
+        ReportDeathOnce();
+    }
 
-        // ?? avisa o DeathManager
-        Died?.Invoke();
-        
-        // opcional: destruir o inimigo após pequeno atraso
->>>>>>> Stashed changes
-        Destroy(gameObject, 0.1f);
+    void ReportDeathOnce()
+    {
+        if (reportedDeath) return;
+        reportedDeath = true;
+
+        if (EnemySpawner.Instance != null)
+            EnemySpawner.Instance.NotifyDeath();
     }
 }
