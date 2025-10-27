@@ -5790,7 +5790,7 @@ Transform:
   m_GameObject: {fileID: 519420028}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -137.46, y: -15.978347, z: -10}
+  m_LocalPosition: {x: -134.78, y: -15.978347, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -5942,7 +5942,7 @@ Transform:
   m_GameObject: {fileID: 546713535}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -137.46, y: -14.53, z: 0}
+  m_LocalPosition: {x: -134.78, y: -14.46, z: 0}
   m_LocalScale: {x: 8.5, y: 8, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -14881,7 +14881,7 @@ Transform:
   m_GameObject: {fileID: 1578704083}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -137.46, y: -14.53, z: -10}
+  m_LocalPosition: {x: -134.78, y: -14.46, z: -10}
   m_LocalScale: {x: 0.13684049, y: 0.13684049, z: 0.13684049}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -23972,27 +23972,28 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 37bbe3d8610ef91418e50ff3bbd2ee61, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::OrcController2D
-  velocidade: 2.5
+  velocidadePatrulha: 1.5
+  velocidadePerseguir: 2.5
   forcaPulo: 7
   alcanceVisao: 12
   alcanceAtaque: 1.2
-  groundMask:
-    serializedVersion: 2
-    m_Bits: 64
+  diferencaAlturaParaSaltar: 1
   playerMask:
     serializedVersion: 2
     m_Bits: 1
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 64
   groundCheck: {fileID: 1525064383}
   frenteCheck: {fileID: 840086824}
-  attackPoint: {fileID: 140235273}
+  rayParedeDist: 0.35
+  rayChaoDist: 0.4
+  patrulhaLadoDist: 2
+  attackPoint: {fileID: 0}
+  raioHit: 0.4
   danoAtaque: 10
-  cooldownAtaque: 0.6
-  tempoRetirada: 0.35
-  velocidadeRetirada: 3
-  permitirSalto: 1
-  intervaloSalto: 0.6
-  margemBorda: 0.45
-  alcanceParede: 0.35
+  cooldownAtaque: 0.8
+  saltoCooldown: 0.6
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

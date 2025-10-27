@@ -7,173 +7,182 @@ using UnityEngine;
 public class OrcController2D : MonoBehaviour
 {
     [Header("Movimento")]
-    [SerializeField] float velocidade = 2.5f;
+    [SerializeField] float velocidade = 2.2f;
     [SerializeField] float forcaPulo = 7f;
 
-    [Header("Deteção")]
-    [SerializeField] float alcanceVisao = 12f;
-    [SerializeField] float alcanceAtaque = 1.2f;
-    [SerializeField] LayerMask groundMask;
+    [Header("Deteção do Player")]
+    [SerializeField] float alcanceVisao = 8f;      // raio para começar a perseguir
+    [SerializeField] float alcanceAtaque = 1.2f;   // raio para atacar
     [SerializeField] LayerMask playerMask;
+    Transform alvo;
 
-    [Header("Pontos de checagem")]
-    [SerializeField] Transform groundCheck;   // empty no pé
-    [SerializeField] Transform frenteCheck;   // empty à frente ao nível do pé
-    [SerializeField] Transform attackPoint;   // empty à frente à altura da arma
+    [Header("Ground / Obstáculos")]
+    [SerializeField] LayerMask groundMask;
+    [SerializeField] Transform groundCheck;   // no pé
+    [SerializeField] Transform frenteCheck;   // à frente, baixo
+    [SerializeField] float rayChaoDist = 0.4f;
 
-    [Header("Combate")]
+    [Header("Ataque")]
+    [SerializeField] Transform attackPoint;
+    [SerializeField] float raioHit = 0.4f;
     [SerializeField] int danoAtaque = 10;
-    [SerializeField] float cooldownAtaque = 0.8f;   // tempo entre ataques
-
-    [Header("Recuo após atacar")]
-    [SerializeField] float tempoRetirada = 0.35f;
-    [SerializeField] float velocidadeRetirada = 3f;
-
-    [Header("Salto (anti-spam)")]
-    [SerializeField] bool permitirSalto = true;     // desliga se não quiseres saltos
-    [SerializeField] float intervaloSalto = 0.6f;   // mínimo entre saltos
-    [SerializeField] float margemBorda = 0.45f;     // profundidade do raycast para detetar “sem chão”
-    [SerializeField] float alcanceParede = 0.35f;   // comprimento do raycast frontal
+    [SerializeField] float cooldownAtaque = 2f;
+    bool podeAtacar = true;
+    bool viradoDireita = true;
+    bool aAtacar = false;
 
     Rigidbody2D rb;
     Animator anim;
     Enemy enemy;
-
-    Transform alvo;
-    bool podeAtacar = true;
-    bool viradoDireita = true;
-    bool emRetirada = false;
-
-    float proximoSalto = 0f;
-
-    // hashes
-    int idSpeed, idAttack;
+    int idSpeed;
+    int idAttack;
 
     void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
         enemy = GetComponent<Enemy>();
-
         idSpeed = Animator.StringToHash("Speed");
         idAttack = Animator.StringToHash("Attack");
     }
 
     void Start()
     {
-        var go = GameObject.FindGameObjectWithTag("Player");
-        if (go) alvo = go.transform;
+        ProcurarPlayerAtivo();
     }
 
     void Update()
     {
-        if (!alvo) return;
-        if (!rb.simulated) return; // morreu
+        if (!rb.simulated) return;
 
-        if (emRetirada)
-        {
-            // durante a retirada, não persegue/ataca; velocidade vem da corrotina
-            SetSpeedParam(Mathf.Abs(rb.linearVelocity.x));
-            return;
-        }
+        if (!alvo || !alvo.gameObject.activeInHierarchy)
+            ProcurarPlayerAtivo();
+
+        if (!alvo) return;
 
         float dist = Vector2.Distance(transform.position, alvo.position);
+        float diffAltura = alvo.position.y - transform.position.y;
 
-        // Fora de visão → Idle
-        if (dist > alcanceVisao)
+        if (dist <= alcanceAtaque)
         {
-            Parar();
-            return;
-        }
+            // dentro da zona de ataque: parar e atacar
+            rb.linearVelocity = new Vector2(0f, rb.linearVelocity.y);
 
-        // Dentro do alcance de ataque → ataca (com cooldown)
-        if (dist <= alcanceAtaque && podeAtacar)
-        {
-            Parar();
-            StartCoroutine(Atacar());
-            return;
-        }
+            // virar para o player
+            float dir = Mathf.Sign(alvo.position.x - transform.position.x);
+            if (dir > 0 && !viradoDireita) Flip();
+            else if (dir < 0 && viradoDireita) Flip();
 
-        // Perseguir
-        float dir = Mathf.Sign(alvo.position.x - transform.position.x);
-        rb.linearVelocity = new Vector2(dir * velocidade, rb.linearVelocity.y);
-        SetSpeedParam(Mathf.Abs(rb.linearVelocity.x));
-        VirarSePrecisar(dir);
-
-        // SALTO SÓ QUANDO PRECISO
-        if (permitirSalto && NoChao() && Time.time >= proximoSalto)
-        {
-            bool paredeAFrente = ObstaculoBaixoAFrente();
-            bool beiraSemChao = BordaSemChaoAFrente();
-
-            // Regra: salta se houver parede à frente; ou se houver beira mas o player estiver claramente acima
-            bool precisaSaltar = paredeAFrente || (beiraSemChao && (alvo.position.y - transform.position.y) > 0.5f);
-
-            if (precisaSaltar)
+            // iniciar ataque cíclico
+            if (!aAtacar)
             {
-                proximoSalto = Time.time + intervaloSalto;
-                rb.linearVelocity = new Vector2(rb.linearVelocity.x, 0f);
-                rb.AddForce(Vector2.up * forcaPulo, ForceMode2D.Impulse);
+                aAtacar = true;
+                StartCoroutine(LoopAtaque());
             }
         }
+        else if (dist <= alcanceVisao)
+        {
+            // fora da range de ataque mas dentro da visão → perseguir
+            aAtacar = false;
+            float dir = Mathf.Sign(alvo.position.x - transform.position.x);
+            rb.linearVelocity = new Vector2(dir * velocidade, rb.linearVelocity.y);
+
+            if (dir > 0 && !viradoDireita) Flip();
+            else if (dir < 0 && viradoDireita) Flip();
+
+            // só salta se não houver chão à frente e o player estiver acima
+            if (SemChaoAFrente() && NoChao() && diffAltura > 0.6f && !PlayerPorCima())
+                TentarSaltar();
+        }
+        else
+        {
+            // fora da visão → parado
+            aAtacar = false;
+            rb.linearVelocity = new Vector2(0f, rb.linearVelocity.y);
+        }
+
+        AtualizarAnimSpeed();
     }
 
-    IEnumerator Atacar()
+    IEnumerator LoopAtaque()
     {
-        podeAtacar = false;
-        if (anim) anim.SetTrigger(idAttack);
-
-        // espera para sincronizar com o frame do impacto
-        yield return new WaitForSeconds(0.15f);
-
-        // aplicar dano numa área à frente
-        if (attackPoint)
+        while (aAtacar)
         {
-            Collider2D[] hits = Physics2D.OverlapCircleAll(attackPoint.position, 0.4f, playerMask);
-            foreach (var h in hits)
+            if (podeAtacar)
             {
-                var p = h.GetComponent<Player>();
-                if (p != null) p.TomarDano(danoAtaque);
+                podeAtacar = false;
+
+                if (anim) anim.SetTrigger(idAttack);
+                yield return new WaitForSeconds(0.25f); // tempo até o golpe acertar
+
+                if (attackPoint)
+                {
+                    Collider2D[] hits = Physics2D.OverlapCircleAll(attackPoint.position, raioHit, playerMask);
+                    foreach (var h in hits)
+                    {
+                        var p = h.GetComponent<Player>();
+                        if (p != null)
+                            p.TomarDano(danoAtaque);
+                    }
+                }
+
+                // espera o cooldown antes do próximo ataque
+                yield return new WaitForSeconds(cooldownAtaque);
+                podeAtacar = true;
             }
-        }
-
-        // recuar depois de atacar
-        if (alvo != null)
-        {
-            emRetirada = true;
-            float dirLonge = Mathf.Sign(transform.position.x - alvo.position.x); // para longe do player
-            float t = 0f;
-            while (t < tempoRetirada)
+            else
             {
-                rb.linearVelocity = new Vector2(dirLonge * velocidadeRetirada, rb.linearVelocity.y);
-                SetSpeedParam(Mathf.Abs(rb.linearVelocity.x));
-                t += Time.deltaTime;
                 yield return null;
             }
-            emRetirada = false;
         }
-
-        // cooldown entre ataques
-        yield return new WaitForSeconds(cooldownAtaque);
-        podeAtacar = true;
     }
 
-    // --------- Helpers ----------
-    void Parar()
+    // ===========================
+    // AUXILIARES
+    // ===========================
+    bool NoChao()
     {
-        rb.linearVelocity = new Vector2(0f, rb.linearVelocity.y);
-        SetSpeedParam(0f);
+        if (!groundCheck) return false;
+        return Physics2D.OverlapCircle(groundCheck.position, 0.1f, groundMask);
     }
 
-    void SetSpeedParam(float s)
+    bool SemChaoAFrente()
     {
-        if (anim) anim.SetFloat(idSpeed, s);
+        if (!frenteCheck) return false;
+        RaycastHit2D chaoFrente = Physics2D.Raycast(frenteCheck.position, Vector2.down, rayChaoDist, groundMask);
+        return chaoFrente.collider == null;
     }
 
-    void VirarSePrecisar(float dir)
+    bool PlayerPorCima()
     {
-        if (dir > 0 && !viradoDireita) Flip();
-        else if (dir < 0 && viradoDireita) Flip();
+        // Verifica se há player logo acima do orc para evitar saltos loucos
+        Vector2 origem = transform.position;
+        RaycastHit2D hit = Physics2D.Raycast(origem, Vector2.up, 1.5f, playerMask);
+        return hit.collider != null;
+    }
+
+    void TentarSaltar()
+    {
+        rb.linearVelocity = new Vector2(rb.linearVelocity.x, 0f);
+        rb.AddForce(Vector2.up * forcaPulo, ForceMode2D.Impulse);
+    }
+
+    void ProcurarPlayerAtivo()
+    {
+        var jogadores = GameObject.FindGameObjectsWithTag("Player");
+        foreach (var j in jogadores)
+        {
+            if (j.activeInHierarchy)
+            {
+                alvo = j.transform;
+                break;
+            }
+        }
+    }
+
+    void AtualizarAnimSpeed()
+    {
+        if (anim) anim.SetFloat(idSpeed, Mathf.Abs(rb.linearVelocity.x));
     }
 
     void Flip()
@@ -184,38 +193,30 @@ public class OrcController2D : MonoBehaviour
         transform.localScale = s;
     }
 
-    bool NoChao()
-    {
-        if (!groundCheck) return false;
-        return Physics2D.OverlapCircle(groundCheck.position, 0.1f, groundMask);
-    }
-
-    bool ObstaculoBaixoAFrente()
-    {
-        if (!frenteCheck) return false;
-        Vector2 dir = viradoDireita ? Vector2.right : Vector2.left;
-        var hit = Physics2D.Raycast(frenteCheck.position, dir, alcanceParede, groundMask);
-        return hit.collider != null;
-    }
-
-    bool BordaSemChaoAFrente()
-    {
-        if (!frenteCheck) return false;
-        var hit = Physics2D.Raycast(frenteCheck.position, Vector2.down, margemBorda, groundMask);
-        return hit.collider == null;
-    }
-
     void OnDrawGizmosSelected()
     {
-        Gizmos.color = Color.yellow;
-        if (attackPoint) Gizmos.DrawWireSphere(attackPoint.position, 0.4f);
-        if (groundCheck) Gizmos.DrawWireSphere(groundCheck.position, 0.1f);
+        if (attackPoint)
+        {
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawWireSphere(attackPoint.position, raioHit);
+        }
+
+        if (groundCheck)
+        {
+            Gizmos.color = Color.green;
+            Gizmos.DrawWireSphere(groundCheck.position, 0.1f);
+        }
 
         if (frenteCheck)
         {
-            Vector3 dir = (viradoDireita ? Vector3.right : Vector3.left) * alcanceParede;
-            Gizmos.DrawLine(frenteCheck.position, frenteCheck.position + dir);
-            Gizmos.DrawLine(frenteCheck.position, frenteCheck.position + Vector3.down * margemBorda);
+            Gizmos.color = Color.cyan;
+            Gizmos.DrawLine(frenteCheck.position, frenteCheck.position + Vector3.down * rayChaoDist);
         }
+
+        Gizmos.color = new Color(1f, 0.3f, 0.3f, 0.2f);
+        Gizmos.DrawWireSphere(transform.position, alcanceVisao);
+
+        Gizmos.color = new Color(1f, 1f, 0f, 0.3f);
+        Gizmos.DrawWireSphere(transform.position, alcanceAtaque);
     }
 }
