@@ -10,14 +10,17 @@ public class Enemy : MonoBehaviour
 
     [Header("Contacto")]
     [Tooltip("Se TRUE, o inimigo causa dano ao Player quando encosta.")]
-    public bool causarDanoPorContacto = false; // DESLIGADO ENQUANTO TESTAS MOVIMENTO
+    public bool causarDanoPorContacto = false; // deixa FALSE enquanto testas
 
-    EnemyHealthUI barraVida;
-    Animator anim;
-    bool isDead;
-    bool reportedDeath;
-    [SerializeField] float hitStun = 0.05f;
-    float lastHitTime = -999f;
+    private EnemyHealthUI barraVida;
+    private Animator anim;
+    private bool isDead;
+    private bool reportedDeath;
+    [SerializeField] private float hitStun = 0.05f;
+    private float lastHitTime = -999f;
+
+    // <-- Adicionámos isto
+    private DeathManager deathManager;
 
     void Start()
     {
@@ -26,6 +29,9 @@ public class Enemy : MonoBehaviour
 
         barraVida = GetComponentInChildren<EnemyHealthUI>();
         if (barraVida) barraVida.enemy = this;
+
+        // vamos buscar o DeathManager da cena
+        deathManager = FindFirstObjectByType<DeathManager>();
 
         if (EnemySpawner.Instance != null)
             EnemySpawner.Instance.NotifySpawned();
@@ -48,8 +54,13 @@ public class Enemy : MonoBehaviour
         if (anim)
         {
             foreach (var p in anim.parameters)
+            {
                 if (p.type == AnimatorControllerParameterType.Trigger && p.name == "Hit")
-                { anim.SetTrigger("Hit"); break; }
+                {
+                    anim.SetTrigger("Hit");
+                    break;
+                }
+            }
         }
     }
 
@@ -80,13 +91,27 @@ public class Enemy : MonoBehaviour
 
         if (barraVida) barraVida.InimigoMorreu();
 
+        // desliga IA para ele parar
         var ai = GetComponent<OrcController2D>();
         if (ai) ai.enabled = false;
 
+        // desliga física
         var rb = GetComponent<Rigidbody2D>();
         if (rb) rb.simulated = false;
 
+        // diz ao jogo que ganhaste
+        if (deathManager != null)
+        {
+            deathManager.ShowWinScreen();
+        }
+        else
+        {
+            Debug.LogWarning("DeathManager não encontrado, não consigo mostrar ecrã de vitória!");
+        }
+
         ReportDeathOnce();
+
+       
         Destroy(gameObject);
     }
 
