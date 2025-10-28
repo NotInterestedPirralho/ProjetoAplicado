@@ -23812,6 +23812,7 @@ GameObject:
   - component: {fileID: 2117708874}
   - component: {fileID: 2117708876}
   - component: {fileID: 2117708877}
+  - component: {fileID: 2117708878}
   m_Layer: 0
   m_Name: Orc
   m_TagString: Enemy
@@ -24059,7 +24060,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2117708868}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 37bbe3d8610ef91418e50ff3bbd2ee61, type: 3}
   m_Name: 
@@ -24074,6 +24075,28 @@ MonoBehaviour:
   raioAtaque: 0.5
   danoAtaque: 10
   cooldownAtaque: 2
+--- !u!114 &2117708878
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2117708868}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a77fb5e4b2265c945b1ad16e9aa96325, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NewMonoBehaviourScript
+  velocidade: 2.5
+  alcanceVisao: 10
+  alcanceAtaque: 1.5
+  cooldownAtaque: 2
+  danoAtaque: 10
+  attackPoint: {fileID: 140235273}
+  playerMask:
+    serializedVersion: 2
+    m_Bits: 1
+  distanciaPatrulha: 3
 --- !u!1 &1000009534405549
 GameObject:
   m_ObjectHideFlags: 0
