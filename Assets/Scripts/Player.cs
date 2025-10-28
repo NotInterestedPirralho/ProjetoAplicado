@@ -80,7 +80,13 @@ public class Player : MonoBehaviour
 
         if (controller2D != null)
             controller2D.Die();
+
+        // === MOSTRAR ECRÃ DE DERROTA ===
+        var deathManager = FindObjectOfType<DeathManager>();
+        if (deathManager != null)
+            deathManager.ShowDeathScreen();
     }
+
 
     // =====================
     // ESTADOS

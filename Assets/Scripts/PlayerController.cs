@@ -296,10 +296,8 @@ public class PlayerController2D : MonoBehaviour
 
         if (hasIsDeadParam) anim.SetBool("IsDead", true);
         if (hasDeathParam) anim.SetTrigger("Death");
-
         if (hasSpeedParam) anim.SetFloat("Speed", 0f);
     }
-
     void OnDeathAnimationEnd()
     {
         Debug.Log("Morte concluída – chamar UI/respawn aqui.");
