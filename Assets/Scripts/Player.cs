@@ -11,21 +11,26 @@ public class Player : MonoBehaviour
 
     private bool defendendo;
 
-    // ---- Animator / params ----
-    Animator anim;
-    int hashHit;        // Trigger "Hit"
-    int hashIsDead;     // Bool "IsDead" (opcional)
-    bool hasHit, hasIsDead;
+    // Animator / params
+    private Animator anim;
+    private int hashHit;
+    private int hashIsDead;
+    private bool hasHit, hasIsDead;
 
-    // pequeno cooldown para não spammar o Hit
-    float hitCooldown = 0.15f;
-    float lastHitTime = -999f;
+    // Referência ao controlador de movimento/combate normal
+    private PlayerController2D controller2D;
+
+    // cooldown para não spammar o Hit
+    private float hitCooldown = 0.15f;
+    private float lastHitTime = -999f;
 
     void Start()
     {
         vidaAtual = vidaMaxima;
 
         anim = GetComponent<Animator>();
+        controller2D = GetComponent<PlayerController2D>();
+
         if (anim)
         {
             hashHit = Animator.StringToHash("Hit");
@@ -34,14 +39,23 @@ public class Player : MonoBehaviour
             // detetar de forma segura se os parâmetros existem no controller
             foreach (var p in anim.parameters)
             {
-                if (p.type == AnimatorControllerParameterType.Trigger && p.nameHash == hashHit) hasHit = true;
-                if (p.type == AnimatorControllerParameterType.Bool && p.nameHash == hashIsDead) hasIsDead = true;
+                if (p.type == AnimatorControllerParameterType.Trigger &&
+                    p.nameHash == hashHit)
+                {
+                    hasHit = true;
+                }
+
+                if (p.type == AnimatorControllerParameterType.Bool &&
+                    p.nameHash == hashIsDead)
+                {
+                    hasIsDead = true;
+                }
             }
         }
     }
 
     // =====================
-    // Vida
+    // Vida / Dano
     // =====================
     public void TomarDano(int dano)
     {
@@ -51,7 +65,7 @@ public class Player : MonoBehaviour
             return;
         }
 
-        // Dispara a animação de hit (se existir) com um pequeno cooldown
+        // toca animação de hit se existir e se cooldown permitir
         if (hasHit && Time.time - lastHitTime >= hitCooldown)
         {
             anim.SetTrigger(hashHit);
@@ -71,29 +85,47 @@ public class Player : MonoBehaviour
     {
         Debug.Log("Player morreu!");
 
-        // informa o Animator que está morto (se existir o parâmetro)
-        if (hasIsDead) anim.SetBool(hashIsDead, true);
+        // avisa o Animator que morreu (se existir bool IsDead)
+        if (hasIsDead)
+        {
+            anim.SetBool(hashIsDead, true);
+        }
 
-        // chama o controlador para tocar a animação de morte
-        var controller = GetComponent<PlayerController2D>();
-        if (controller != null)
-            controller.Die();
+        // chama lógica de morrer do controller
+        if (controller2D != null)
+        {
+            controller2D.Die();
+        }
     }
 
     // =====================
-    // Controle de estados
+    // Estados
     // =====================
-    public void SetDefendendo(bool estado) => defendendo = estado;
-    public bool EstaDefendendo() => defendendo;
-    public int GetVidaAtual() => vidaAtual;
+    public void SetDefendendo(bool estado)
+    {
+        defendendo = estado;
+    }
+
+    public bool EstaDefendendo()
+    {
+        return defendendo;
+    }
+
+    public int GetVidaAtual()
+    {
+        return vidaAtual;
+    }
 
     // =====================
-    // Colisão com inimigos (opcional, deixa FALSE para evitar dano duplo)
+    // Colisão com inimigos (só se quiseres dano por toque)
     // =====================
     private void OnCollisionEnter2D(Collision2D collision)
     {
         if (!danoPorToque) return;
+
         if (collision.gameObject.CompareTag("Enemy"))
+        {
             TomarDano(5);
+        }
     }
 }
