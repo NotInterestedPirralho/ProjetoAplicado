@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem; // Novo Input System
+using TMPro; // <<< MUITO IMPORTANTE para usar TextMeshProUGUI
 
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(Player))]
@@ -20,8 +21,18 @@ public class PlayerController2D : MonoBehaviour
     public int maxPulos = 2;
     private int pulosRestantes;
 
-    [Header("UI/Managers")]
-    [SerializeField] private DeathManager deathManager; // opcional (fallback com Find)
+    // DEFESA
+    [Header("Defesa")]
+    public float maxDefendDuration = 3f;   // podes segurar defesa até 3s
+    public float defendCooldown = 10f;     // depois tens de esperar 10s
+    private bool defending = false;
+    private bool canDefend = true;
+    private float defendTimer = 0f;
+    private float defendCooldownTimer = 0f;
+
+    // UI SHIELD
+    [Header("UI")]
+    public TextMeshProUGUI shieldText; // arrasta o ShieldText do Canvas aqui no Inspector
 
     private Rigidbody2D rb;
     private Player player;
@@ -30,11 +41,10 @@ public class PlayerController2D : MonoBehaviour
     private Vector2 movimento;
     private bool pular;
 
-    // -------- Flip ----------
     private bool facingRight = true;
 
-    // Animação / estados
-    bool hasSpeedParam, hasAttackParam, hasDefendParam, hasDeathParam, hasIsDeadParam, hasHitParam;
+    // Animator params
+    bool hasSpeedParam, hasAttackParam, hasDefendParam, hasDeathParam, hasIsDeadParam;
     bool isDead;
 
     void Start()
@@ -45,18 +55,18 @@ public class PlayerController2D : MonoBehaviour
 
         pulosRestantes = maxPulos;
 
-        // Detectar parâmetros existentes no Animator (seguro)
         hasSpeedParam = HasParam("Speed", AnimatorControllerParameterType.Float);
         hasAttackParam = HasParam("Attack", AnimatorControllerParameterType.Trigger);
         hasDefendParam = HasParam("Defend", AnimatorControllerParameterType.Bool);
         hasDeathParam = HasParam("Death", AnimatorControllerParameterType.Trigger);
         hasIsDeadParam = HasParam("IsDead", AnimatorControllerParameterType.Bool);
-        hasHitParam = HasParam("Hit", AnimatorControllerParameterType.Trigger);
     }
 
     void Update()
     {
         if (isDead) return;
+
+        AtualizarCooldownDefesa();
 
         LerMovimento();
         LerPulo();
@@ -75,18 +85,83 @@ public class PlayerController2D : MonoBehaviour
     }
 
     // =====================
+    // COOLDOWN DA DEFESA
+    // =====================
+    void AtualizarCooldownDefesa()
+    {
+        if (defending)
+        {
+            defendTimer += Time.deltaTime;
+
+            // se passou do máximo permitido
+            if (defendTimer >= maxDefendDuration)
+            {
+                PararDefesaEIniciarCooldown();
+            }
+
+            // UI enquanto estás a defender (mostra quanto tempo ainda podes segurar)
+            AtualizarShieldUI_DefendAtivo();
+        }
+        else
+        {
+            if (!canDefend)
+            {
+                defendCooldownTimer += Time.deltaTime;
+
+                // cooldown acabou?
+                if (defendCooldownTimer >= defendCooldown)
+                {
+                    canDefend = true;
+                }
+
+                // UI enquanto estás em cooldown
+                AtualizarShieldUI_EmCooldown();
+            }
+            else
+            {
+                // defesa pronta de novo
+                AtualizarShieldUI_Pronto();
+            }
+        }
+    }
+
+    void PararDefesaEIniciarCooldown()
+    {
+        defending = false;
+        player.SetDefendendo(false);
+        if (hasDefendParam) anim.SetBool("Defend", false);
+
+        // começa cooldown
+        canDefend = false;
+        defendCooldownTimer = 0f;
+
+        defendTimer = 0f;
+    }
+
+    // =====================
     // Movimento
     // =====================
     void LerMovimento()
     {
         movimento = Vector2.zero;
 
-        if (Keyboard.current.aKey.isPressed) movimento.x = -1;
-        if (Keyboard.current.dKey.isPressed) movimento.x = 1;
+        if (defending)
+            return;
+
+        if (Keyboard.current.aKey.isPressed)
+            movimento.x = -1;
+        if (Keyboard.current.dKey.isPressed)
+            movimento.x = 1;
     }
 
     void AplicarMovimento()
     {
+        if (defending)
+        {
+            rb.linearVelocity = new Vector2(0f, rb.linearVelocity.y);
+            return;
+        }
+
         rb.linearVelocity = new Vector2(movimento.x * velocidade, rb.linearVelocity.y);
 
         if (movimento.x > 0f && !facingRight) Flip();
@@ -107,39 +182,76 @@ public class PlayerController2D : MonoBehaviour
     // =====================
     void LerPulo()
     {
-        if (Keyboard.current.wKey.wasPressedThisFrame && pulosRestantes > 0)
+        if (Keyboard.current.wKey.wasPressedThisFrame && pulosRestantes > 0 && !defending)
             pular = true;
     }
 
     void AplicarPulo()
     {
-        if (!pular) return;
-
-        rb.linearVelocity = new Vector2(rb.linearVelocity.x, forcaPulo);
-        pulosRestantes--;
-        pular = false;
+        if (pular)
+        {
+            rb.linearVelocity = new Vector2(rb.linearVelocity.x, forcaPulo);
+            pulosRestantes--;
+            pular = false;
+        }
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
         if (collision.gameObject.CompareTag("Ground"))
+        {
             pulosRestantes = maxPulos;
+        }
     }
 
     // =====================
-    // Ataque, Defesa e Interação
+    // Ataque / Defesa / Interação
     // =====================
     void LerAcoes()
     {
-        if (Mouse.current.leftButton.wasPressedThisFrame && !atacando)
+        // ATAQUE
+        if (Mouse.current.leftButton.wasPressedThisFrame && !atacando && !defending)
             StartCoroutine(Atacar());
 
-        bool defending = Mouse.current.rightButton.isPressed;
-        player.SetDefendendo(defending);
-        if (hasDefendParam) anim.SetBool("Defend", defending);
+        // DEFESA (botão direito)
+        bool segurandoDefesa = Mouse.current.rightButton.isPressed;
 
-        if (Keyboard.current.eKey.wasPressedThisFrame)
+        if (segurandoDefesa)
+        {
+            TentarIniciarOuManterDefesa();
+        }
+        else
+        {
+            if (defending)
+            {
+                PararDefesaEIniciarCooldown();
+            }
+        }
+
+        // Interagir
+        if (Keyboard.current.eKey.wasPressedThisFrame && !defending)
             Interagir();
+    }
+
+    void TentarIniciarOuManterDefesa()
+    {
+        if (defending)
+        {
+            player.SetDefendendo(true);
+            if (hasDefendParam) anim.SetBool("Defend", true);
+            return;
+        }
+
+        if (!canDefend)
+            return;
+
+        // começar defesa
+        defending = true;
+        defendTimer = 0f;
+        player.SetDefendendo(true);
+        if (hasDefendParam) anim.SetBool("Defend", true);
+
+        rb.linearVelocity = new Vector2(0f, rb.linearVelocity.y);
     }
 
     System.Collections.IEnumerator Atacar()
@@ -151,7 +263,10 @@ public class PlayerController2D : MonoBehaviour
         foreach (Collider2D inimigo in inimigos)
         {
             Enemy e = inimigo.GetComponent<Enemy>();
-            if (e != null) e.TakeDamage(danoAtaque);
+            if (e != null)
+            {
+                e.TakeDamage(danoAtaque);
+            }
         }
 
         yield return new WaitForSeconds(duracaoAtaque);
@@ -164,15 +279,6 @@ public class PlayerController2D : MonoBehaviour
     }
 
     public bool EstaAtacando() => atacando;
-
-    // =====================
-    // Hit
-    // =====================
-    public void Hit()
-    {
-        if (isDead) return;
-        if (hasHitParam) anim.SetTrigger("Hit");
-    }
 
     // =====================
     // Morte
@@ -190,30 +296,18 @@ public class PlayerController2D : MonoBehaviour
 
         if (hasIsDeadParam) anim.SetBool("IsDead", true);
         if (hasDeathParam) anim.SetTrigger("Death");
-        if (hasSpeedParam) anim.SetFloat("Speed", 0f);
 
-        // >>> chamar o ecrã de DERROTA <<<
-        if (deathManager == null)
-            deathManager = FindObjectOfType<DeathManager>();
-        deathManager?.ShowDeathScreen();
+        if (hasSpeedParam) anim.SetFloat("Speed", 0f);
     }
 
-    // Chamado por Animation Event no fim do clip de morte (opcional)
     void OnDeathAnimationEnd()
     {
         Debug.Log("Morte concluída – chamar UI/respawn aqui.");
     }
 
     // =====================
-    // Debug/Editor
+    // Utils Animator
     // =====================
-    private void OnDrawGizmosSelected()
-    {
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position, alcanceAtaque);
-    }
-
-    // ==== Utilitário: verificar parâmetros do Animator de forma segura ====
     bool HasParam(string name, AnimatorControllerParameterType type)
     {
         if (!anim) return false;
@@ -221,5 +315,40 @@ public class PlayerController2D : MonoBehaviour
             if (p.type == type && p.name == name)
                 return true;
         return false;
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, alcanceAtaque);
+    }
+
+    // =====================
+    // UI SHIELD HELPERS
+    // =====================
+    void AtualizarShieldUI_DefendAtivo()
+    {
+        if (!shieldText) return;
+
+        float restante = Mathf.Clamp(maxDefendDuration - defendTimer, 0f, maxDefendDuration);
+        shieldText.text = $"Shield: {restante:0.0}s";
+        shieldText.color = Color.cyan;
+    }
+
+    void AtualizarShieldUI_EmCooldown()
+    {
+        if (!shieldText) return;
+
+        float restante = Mathf.Clamp(defendCooldown - defendCooldownTimer, 0f, defendCooldown);
+        shieldText.text = $"Shield CD: {restante:0.0}s";
+        shieldText.color = Color.red;
+    }
+
+    void AtualizarShieldUI_Pronto()
+    {
+        if (!shieldText) return;
+
+        shieldText.text = "Shield Ready";
+        shieldText.color = Color.green;
     }
 }
